@@ -1,77 +1,144 @@
 # coding=utf-8
 
-import pandas as pd
-import requests as request
+from plotly.offline import download_plotlyjs, plot
 import simplejson as simplejson
 import plotly.graph_objs as go
-from plotly.offline import download_plotlyjs, plot
+import requests as request
+import pandas as pd
 
+headers = {"Content-type": "application/json"}
 mainUrl = "http://api.scb.se/OV0104/v1/doris/en/ssd/START/BE/BE0101/"
-populationUrl = mainUrl + "BE0101A/BefolkningNy";
-birthsUrl = mainUrl + "BE0101H/FoddaK"
-headers = {"Content-type": "application/json"};
 
-def getRequestBodyForPopulation():
-	return {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101N1"]}}],"response":{"format":"json"}}
+def getDataFrame(statsUrl, jsonBody):
+	years = []
+	malesNumber = []
+	femalesNumber = []
 
-def getRequestBodyForBirths():
-	return {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
+	response = request.post(url = statsUrl, json = jsonBody, headers = headers);
+	json_data = simplejson.loads(response.text)["data"]
+
+	for val in json_data:
+		if val["key"][1] == "1":
+			years.append(int(val["key"][2]));
+			malesNumber.append(int(val["values"][0]))
+		else:
+			femalesNumber.append(int(val["values"][0]))
+
+	dataFrame = pd.DataFrame(data = {"year": years, "male": malesNumber, "female": femalesNumber})
+
+	return dataFrame;
 
 def getPopulationByGenderDataframe():
-	years = []
-	numberOfMen = []
-	numberOfWomen = []
+	populationUrl = mainUrl + "BE0101A/BefolkningNy"
+	requestBodyForPopulation = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101N1"]}}],"response":{"format":"json"}};
 
-	# get population by gender 1968 - 2017
-	response = request.post(url=populationUrl, json=getRequestBodyForPopulation(), headers=headers);
-	json_data = simplejson.loads(response.text)["data"]
-
-	for val in json_data:
-		if val["key"][1] == "1":
-			years.append(int(val["key"][2]));
-			numberOfMen.append(int(val["values"][0]))
-		else:
-			numberOfWomen.append(int(val["values"][0]))
-
-	populationByGenderDf = pd.DataFrame(data={"year": years, "men": numberOfMen, "women": numberOfWomen})
-
-	return populationByGenderDf;
+	return getDataFrame(populationUrl, requestBodyForPopulation)
 
 def getBirthsByGenderDataFrame():
-	years = []
-	numberOfBoys = []
-	numberOfGirls = []
+	birthsUrl = mainUrl + "BE0101H/FoddaK"
+	requestBodyForBirths = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
 
-	response = request.post(url=birthsUrl, json=getRequestBodyForBirths(), headers=headers);
-	json_data = simplejson.loads(response.text)["data"]
+	return getDataFrame(birthsUrl, requestBodyForBirths)
 
-	for val in json_data:
-		if val["key"][1] == "1":
-			years.append(int(val["key"][2]));
-			numberOfBoys.append(int(val["values"][0]))
-		else:
-			numberOfGirls.append(int(val["values"][0]))
+def getDeathsByGenderDataFrame():
+	deathsUrl = mainUrl + "BE0101I/DodaFodelsearK"
+	requestBodyForDeaths = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
 
-	birthsByGenderDf = pd.DataFrame(data={"year": years, "boys": numberOfBoys, "girls": numberOfGirls})
+	return getDataFrame(deathsUrl, requestBodyForDeaths)
 
-	return birthsByGenderDf
+def getImmigrationByGenderDataFrame():
+	immgrationUrl = mainUrl + "BE0101J/Flyttningar97"
+	requestBodyForImmigration = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AX"]}}],"response":{"format":"json"}}
+
+	return getDataFrame(immgrationUrl, requestBodyForImmigration)
+
+def getEmigrationByGenderDataFrame():
+	emigrationUrl = mainUrl + "BE0101J/Flyttningar97"
+	requestBodyForEmigration = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AY"]}}],"response":{"format":"json"}}	
+	dataFrameEmigration = getDataFrame(emigrationUrl, requestBodyForEmigration)
+	dataFrameEmigration["male"] *= -1
+	dataFrameEmigration["female"] *= -1
+
+	return dataFrameEmigration
+
+def getMoveinsByGenderDataFrame():	
+	moveinssaUrl = mainUrl + "BE0101J/Flyttningar97"
+	requestBodyForMoveins = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A2"]}}],"response":{"format":"json"}}
+
+	return getDataFrame(moveinssaUrl, requestBodyForMoveins)
+
+def getMoveoutsByGenderDataFrame():
+	moveoutsaUrl = mainUrl + "BE0101J/Flyttningar97"
+	requestBodyForMoveouts = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A3"]}}],"response":{"format":"json"}}
+	dataFrameMoveouts = getDataFrame(moveoutsaUrl, requestBodyForMoveouts)
+	dataFrameMoveouts["male"] *= -1
+	dataFrameMoveouts["female"] *= -1
+
+	return dataFrameMoveouts
+
+def plotDataFrameGraph(df, fileName, figTitle, xAxisTitle, yAxisTitle):
+	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
+	trace1 = go.Scatter(x = df['year'], y = df['female'], name = 'females', line = dict(color = 'red'))
+	layout = go.Layout(title = figTitle,  xaxis = dict(title = xAxisTitle), yaxis = dict(title = yAxisTitle))
+
+	plot(go.Figure(data = [trace0, trace1], layout = layout), filename = fileName)
+
+def plotPopulationByGenderGraph():
+	fileName = "populationByGender.html";
+	figTitle = "Total population by gender";
+	xAxisTitle = "Year"
+	yAxisTitle = "Population"
+	plotDataFrameGraph(getPopulationByGenderDataframe(), fileName, figTitle, xAxisTitle, yAxisTitle)
 
 
-def plotPopulationByGenderGraph(df):
-	trace0 = go.Scatter(x = df['year'], y = df['men'], name = 'men', line = dict(color='blue'))
-	trace1 = go.Scatter(x = df['year'], y = df['women'], name = 'women', line = dict(color='red'))
+def plotBirthsByGenderGraph():
+	fileName = "birthsByGender.html";
+	figTitle = "Births by gender";
+	xAxisTitle = "Year"
+	yAxisTitle = "Births"
+	plotDataFrameGraph(getBirthsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
 
-	layout = go.Layout(title= "Total population by gender",  xaxis = dict(title = 'Year'), yaxis = dict(title = 'Population'))
-	plot(go.Figure(data = [trace0, trace1], layout=layout), filename='populationByGender.html')
+def plotDeathsByGenderGraph():
+	fileName = "deathsByGender.html";
+	figTitle = "Deaths by gender";
+	xAxisTitle = "Year"
+	yAxisTitle = "Deaths"
+	plotDataFrameGraph(getDeathsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
 
-def plotBirthsByGenderGraph(df):
-	trace0 = go.Scatter(x=df['year'], y=df['boys'], name='boys', line = dict(color='blue'))
-	trace1 = go.Scatter(x=df['year'], y=df['girls'], name='girls', line = dict(color='red'))
+def plotImmigrationByGenderGraph():
+	fileName = "immigrationByGender.html";
+	figTitle = "Immigration by gender";
+	xAxisTitle = "Year"
+	yAxisTitle = "Persons"
+	plotDataFrameGraph(getImmigrationByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
 
-	layout = go.Layout(title= "Births by gender", xaxis = dict(title = 'Year'), yaxis = dict(title = 'Births'))
-	plot(go.Figure(data = [trace0, trace1], layout=layout), filename='birthsByGender.html')
+def plotEmigrationByGenderGraph():
+	fileName = "emigrationByGender.html";
+	figTitle = "Emigration by gender";
+	xAxisTitle = "Year"
+	yAxisTitle = "Persons"
+	plotDataFrameGraph(getEmigrationByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+
+def plotMoveinsByGenderGraph():
+	fileName = "moveinsByGender.html";
+	figTitle = "Moveins within country";
+	xAxisTitle = "Year"
+	yAxisTitle = "Persons"
+	plotDataFrameGraph(getMoveinsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+
+def plotMoveoutsByGenderGraph():
+	fileName = "moveoutsByGender.html";
+	figTitle = "Moveouts within country";
+	xAxisTitle = "Year"
+	yAxisTitle = "Persons"
+	plotDataFrameGraph(getMoveoutsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
 
 
 if __name__ == "__main__":
-	plotPopulationByGenderGraph(getPopulationByGenderDataframe());
-	plotBirthsByGenderGraph(getBirthsByGenderDataFrame());
+	plotPopulationByGenderGraph()
+	plotBirthsByGenderGraph()
+	plotDeathsByGenderGraph()
+	plotImmigrationByGenderGraph()
+	plotEmigrationByGenderGraph()
+	plotMoveinsByGenderGraph()
+	plotMoveoutsByGenderGraph()
