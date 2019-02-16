@@ -153,7 +153,19 @@ def getMoveoutsByGenderDataFrame():
 
 	return getPerTotalDataFrame(moveoutsData, True)
 
-def getDeathRiskDataFrame():
+def calculateScbData(data):
+	malesScb = []
+	femalesScb = []
+
+	for line in data["males"]:
+		malesScb.append(sum(line)/len(line)/10)
+
+	for line in data["females"]:
+		femalesScb.append(sum(line)/len(line)/10)
+
+	return {"malesScb" : malesScb, "femalesScb" : femalesScb}
+
+def getDeathRiskData():
 	global deathRiskData
 
 	if deathRiskData == None:
@@ -161,7 +173,46 @@ def getDeathRiskDataFrame():
 		requestBodyDeathRisk = {"query":[{"code":"Alder","selection":{"filter":"item","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A¤"]}},{"code":"Tid","selection":{"filter":"item","values":["2015","2016","2017"]}}],"response":{"format":"json"}}
 		response = request.post(url = deathRiskUrl, json = requestBodyDeathRisk, headers = headers);
 		json_data = simplejson.loads(response.text)["data"]
-		print json_data
+		firstIndex = json_data[0]["key"][1]
+		lastIndexM = firstIndex
+		lastIndexF = firstIndex
+		deathRiskMales = []
+		deathRiskFemales = []
+		lineM = []
+		lineF = []
+
+		for val in json_data:
+			if val["key"][0] == "1":
+				if lastIndexM != val["key"][1]:
+					deathRiskMales.append(lineM)
+					lineM = []
+					lastIndexM = val["key"][1]
+				lineM.append(float(val["values"][0]))
+			else:
+				if lastIndexF != val["key"][1]:
+					deathRiskFemales.append(lineF)
+					lineF = []
+					lastIndexF = val["key"][1]
+				lineF.append(float(val["values"][0]))
+
+		deathRiskMales.append(lineM)
+		deathRiskFemales.append(lineF)
+		deathRiskData = calculateScbData({"males": deathRiskMales, "females": deathRiskFemales})
+
+	return deathRiskData
+
+def plotRisk(data, fileName, figTitle):
+	trace = go.Scatter(y = data)
+	layout = go.Layout(title = figTitle)
+	plot(go.Figure(data = [trace], layout = layout), filename = fileName)
+
+def plotMaleRisk():
+	data = getDeathRiskData()
+	plotRisk(data["malesScb"], "deathRiskMales.html", "Males death risk only SCB")
+
+def plotFemaleRisk():
+	data = getDeathRiskData()
+	plotRisk(data["femalesScb"], "deathRiskFemales.html", "Females death risk only SCB")
 
 def plotDataFrameGraph(df, fileName, figTitle, xAxisTitle, yAxisTitle):
 	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
@@ -259,35 +310,40 @@ if __name__ == "__main__":
 	9. Female population heatmap with numbers
 	10. Male population heatmap without numbers
 	11 Female population heatmap without numbers
+	12. Males death risk
+	13 Females death risk
 	"""
-	# print initial_text
+	print(initial_text)
 
-	# while True:
-	# 	cmd = raw_input("Enter a number to select graph, or q to exit: ")
-	# 	if cmd == '1':
-	# 		plotPopulationByGenderGraph()
-	# 	elif cmd == '2':
-	# 		plotBirthsByGenderGraph()
-	# 	elif cmd == '3':
-	# 		plotDeathsByGenderGraph()
-	# 	elif cmd == '4':
-	# 		plotImmigrationByGenderGraph()
-	# 	elif cmd == '5':
-	# 		plotEmigrationByGenderGraph()
-	# 	elif cmd == '6':
-	# 		plotMoveinsByGenderGraph()
-	# 	elif cmd == '7':
-	# 		plotMoveoutsByGenderGraph()
-	# 	elif cmd == '8':
-	# 		plotMalePopulationHeatmap(True)
-	# 	elif cmd == '9':
-	# 		plotFemalePopulationHeatmap(True)
-	# 	elif cmd == '10':
-	# 		plotMalePopulationHeatmap(False)
-	# 	elif cmd == '11':
-	# 		plotFemalePopulationHeatmap(False)
-	# 	elif cmd == 'q':
-	# 		break
-	# 	else:
-	# 		print "Invalid command."
-	getDeathRiskDataFrame()
+	while True:
+		cmd = input("Enter a number to select graph, or q to exit: ")
+		if cmd == '1':
+			plotPopulationByGenderGraph()
+		elif cmd == '2':
+			plotBirthsByGenderGraph()
+		elif cmd == '3':
+			plotDeathsByGenderGraph()
+		elif cmd == '4':
+			plotImmigrationByGenderGraph()
+		elif cmd == '5':
+			plotEmigrationByGenderGraph()
+		elif cmd == '6':
+			plotMoveinsByGenderGraph()
+		elif cmd == '7':
+			plotMoveoutsByGenderGraph()
+		elif cmd == '8':
+			plotMalePopulationHeatmap(True)
+		elif cmd == '9':
+			plotFemalePopulationHeatmap(True)
+		elif cmd == '10':
+			plotMalePopulationHeatmap(False)
+		elif cmd == '11':
+			plotFemalePopulationHeatmap(False)
+		elif cmd == '12':
+			plotMaleRisk()
+		elif cmd == '13':
+			plotFemaleRisk()
+		elif cmd == 'q':
+			break
+		else:
+			print("Invalid command.")
