@@ -299,13 +299,13 @@ def plotFemalePopulationHeatmap(withNumbers):
 
 if __name__ == "__main__":
 	initial_text = """
-	1. Total population by gender(+ prediction)
-	2. Births by gender(+ prediction)
-	3. Deaths by gender(+ prediction)
-	4. Immigration by gender(+ prediction)
-	5. Emigration by gender(+ prediction)
-	6. Moveins within country by gender(+ prediction)
-	7. Moveouts within country by gender(+ prediction)
+	1. Total population by gender(- prediction)
+	2. Births by gender(- prediction)
+	3. Deaths by gender(- prediction)
+	4. Immigration by gender(- prediction)
+	5. Emigration by gender(- prediction)
+	6. Moveins within country by gender(- prediction)
+	7. Moveouts within country by gender(- prediction)
 	8. Male population heatmap with numbers
 	9. Female population heatmap with numbers
 	10. Male population heatmap without numbers
