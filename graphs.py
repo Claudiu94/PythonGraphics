@@ -18,6 +18,8 @@ emigrationData = None
 moveinsData = None
 moveoutsData = None
 deathRiskData = None
+kommData = None
+scbData = None
 
 def getYearByYearDataFrame(statsUrl, jsonBody):
 	matrixMales = []
@@ -89,6 +91,16 @@ def getPopulationData():
 
 	return populationData
 
+def getDeathsData():
+	global deathsData
+
+	if deathsData == None:
+		deathsUrl = mainUrl + "BE0101I/DodaFodelsearK"
+		requestBodyForDeathsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
+		deathsData = getYearByYearDataFrame(deathsUrl, requestBodyForDeathsYearByYear)
+
+	return deathsData
+
 def getPopulationByGenderDataframe():
 	return getPerTotalDataFrame(getPopulationData(), False)
 	
@@ -104,14 +116,7 @@ def getBirthsByGenderDataFrame():
 	return getPerTotalDataFrame(birthsData, False)
 
 def getDeathsByGenderDataFrame():
-	global deathsData
-
-	if deathsData == None:
-		deathsUrl = mainUrl + "BE0101I/DodaFodelsearK"
-		requestBodyForDeathsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
-		deathsData = getYearByYearDataFrame(deathsUrl, requestBodyForDeathsYearByYear)
-
-	return getPerTotalDataFrame(deathsData, True)
+	return getPerTotalDataFrame(getDeathsData(), True)
 
 def getImmigrationByGenderDataFrame():
 	global immigrationData
@@ -163,9 +168,9 @@ def calculateScbData(data):
 	for line in data["females"]:
 		femalesScb.append(sum(line)/len(line)/10)
 
-	return {"malesScb" : malesScb, "femalesScb" : femalesScb}
+	return {"males" : malesScb, "females" : femalesScb}
 
-def getDeathRiskData():
+def getDeathRiskScbData():
 	global deathRiskData
 
 	if deathRiskData == None:
@@ -201,18 +206,39 @@ def getDeathRiskData():
 
 	return deathRiskData
 
+def getDeathRiskKommData():
+	populationData = getPopulationData()
+	deathData = getDeathsData()
+	malesPopulation = populationData["dataFrame"]["malesMatrix"]
+	malesDeadPopulation = deathData["dataFrame"]["malesMatrix"]
+	femalesPopulation = populationData["dataFrame"]["femalesMatrix"]
+	femalesDeadPopulation = deathData["dataFrame"]["femalesMatrix"]
+	malesKommDeathRisk = []
+	femalesKommDeathRisk = []
+	
+	for i in range(len(malesPopulation)):
+		femalesKommDeathRisk.append(100 * (sum(femalesDeadPopulation[i]) / sum(femalesPopulation[i])))
+		malesKommDeathRisk.append(100 * (sum(malesDeadPopulation[i]) / sum(malesPopulation[i])))
+
+	return {"males" : malesKommDeathRisk, "females" : femalesKommDeathRisk}
+
 def plotRisk(data, fileName, figTitle):
-	trace = go.Scatter(y = data)
+	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
+	trace1 = go.Scatter(y = data["komm"], name = 'Kommun medel', line = dict(color = 'red'))
 	layout = go.Layout(title = figTitle)
-	plot(go.Figure(data = [trace], layout = layout), filename = fileName)
+	plot(go.Figure(data = [trace0, trace1], layout = layout), filename = fileName)
 
 def plotMaleRisk():
-	data = getDeathRiskData()
-	plotRisk(data["malesScb"], "deathRiskMales.html", "Males death risk only SCB")
+	dataScb = getDeathRiskScbData()
+	dataKomm = getDeathRiskKommData()
+	data = {"scb" : dataScb["males"], "komm" : dataKomm["males"]}
+	plotRisk(data, "deathRiskMales.html", "Males death risk")
 
 def plotFemaleRisk():
-	data = getDeathRiskData()
-	plotRisk(data["femalesScb"], "deathRiskFemales.html", "Females death risk only SCB")
+	dataScb = getDeathRiskScbData()
+	dataKomm = getDeathRiskKommData()
+	data = {"scb" : dataScb["females"], "komm" : dataKomm["females"]}
+	plotRisk(data, "deathRiskFemales.html", "Females death risk")
 
 def plotDataFrameGraph(df, fileName, figTitle, xAxisTitle, yAxisTitle):
 	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
@@ -309,9 +335,9 @@ if __name__ == "__main__":
 	8. Male population heatmap with numbers
 	9. Female population heatmap with numbers
 	10. Male population heatmap without numbers
-	11 Female population heatmap without numbers
+	11. Female population heatmap without numbers
 	12. Males death risk
-	13 Females death risk
+	13. Females death risk
 	"""
 	print(initial_text)
 
