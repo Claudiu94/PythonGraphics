@@ -237,9 +237,9 @@ def getTfrKommData():
 
 	for i in range(length):
 		sumArray = numpy.add(birthsData["dataFrame"]["malesMatrix"][i], birthsData["dataFrame"]["femalesMatrix"][i])
-		avgTfrKomm.append(100 * (sum(sumArray) / length) / (sum(femalesPopulation[i + 14]) / length))
-		tfrKomm2017.append(100 * sumArray[last] / femalesPopulation[i + 14][last])
-		tfrKomm2012_2017.append(100 * (sum(sumArray[last - 5 : last + 1]) / 6) / (sum(femalesPopulation[i + 14][last - 5 : last + 1]) / 6))
+		avgTfrKomm.append(round(100 * (sum(sumArray) / length) / (sum(femalesPopulation[i + 14]) / length) , 2))
+		tfrKomm2017.append(round(100 * sumArray[last] / femalesPopulation[i + 14][last], 2))
+		tfrKomm2012_2017.append(round(100 * (sum(sumArray[last - 5 : last + 1]) / 6) / (sum(femalesPopulation[i + 14][last - 5 : last + 1]) / 6), 2))
 
 	return {"avgTfrKomm" : avgTfrKomm, "tfrKomm2017" : tfrKomm2017, "tfrKomm2012_2017" : tfrKomm2012_2017}
 
@@ -270,9 +270,9 @@ def plotFertilityGraph():
 	trace1 = go.Scatter(y = tfrKommData["avgTfrKomm"], x = x, name = 'Average TFR Kommunen', line = dict(color = 'red'))
 	trace2 = go.Scatter(y = tfrKommData["tfrKomm2017"], x = x, name = 'TFR Kommunen 2017', line = dict(color = 'yellow'))
 	trace3 = go.Scatter(y = tfrKommData["tfrKomm2012_2017"], x = x, name = 'TFR Kommunen 2012-2017', line = dict(color = 'green'))
-	layout = go.Layout(title = "Total fertility rate")
+	layout = go.Layout(title = "Total fertility rate", xaxis = dict(title = "Age"), yaxis = dict(title = "Percentage"))
 
-	plot(go.Figure(data = [trace0, trace1, trace2, trace3]), filename = "fertilityGraph.html")
+	plot(go.Figure(data = [trace0, trace1, trace2, trace3], layout = layout), filename = "fertilityGraph.html")
 
 def plotDataFrameGraph(df, fileName, figTitle, xAxisTitle, yAxisTitle):
 	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
