@@ -101,11 +101,7 @@ def getDeathsData():
 
 	return deathsData
 
-def getPopulationByGenderDataframe():
-	return getPerTotalDataFrame(getPopulationData(), False)
-	
-
-def getBirthsByGenderDataFrame():
+def getBirthsData():
 	global birthsData
 
 	if birthsData == None:
@@ -113,7 +109,14 @@ def getBirthsByGenderDataFrame():
 		requestBodyForBirthsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"AlderModer","selection":{"filter":"vs:Ålder1årUS","values":["-14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49+","us"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
 		birthsData = getYearByYearDataFrame(birthsUrl, requestBodyForBirthsYearByYear)
 
-	return getPerTotalDataFrame(birthsData, False)
+	return birthsData
+
+def getPopulationByGenderDataframe():
+	return getPerTotalDataFrame(getPopulationData(), False)
+	
+
+def getBirthsByGenderDataFrame():
+	return getPerTotalDataFrame(getBirthsData(), False)
 
 def getDeathsByGenderDataFrame():
 	return getPerTotalDataFrame(getDeathsData(), True)
@@ -222,6 +225,25 @@ def getDeathRiskKommData():
 
 	return {"males" : malesKommDeathRisk, "females" : femalesKommDeathRisk}
 
+def getTfrKommData():
+	birthsData = getBirthsData()
+	populationData = getPopulationData()
+	length = len(birthsData["dataFrame"]["malesMatrix"])
+	femalesPopulation = populationData["dataFrame"]["femalesMatrix"]
+	last = len(femalesPopulation[0]) - 1
+	avgTfrKomm = []
+	tfrKomm2017 = []
+	tfrKomm2012_2017 = []
+
+	for i in range(length):
+		sumArray = numpy.add(birthsData["dataFrame"]["malesMatrix"][i], birthsData["dataFrame"]["femalesMatrix"][i])
+		avgTfrKomm.append(100 * (sum(sumArray) / length) / (sum(femalesPopulation[i + 14]) / length))
+		tfrKomm2017.append(100 * sumArray[last] / femalesPopulation[i + 14][last])
+		tfrKomm2012_2017.append(100 * (sum(sumArray[last - 5 : last + 1]) / 6) / (sum(femalesPopulation[i + 14][last - 5 : last + 1]) / 6))
+
+	return {"avgTfrKomm" : avgTfrKomm, "tfrKomm2017" : tfrKomm2017, "tfrKomm2012_2017" : tfrKomm2012_2017}
+
+
 def plotRisk(data, fileName, figTitle):
 	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
 	trace1 = go.Scatter(y = data["komm"], name = 'Kommun medel', line = dict(color = 'red'))
@@ -239,6 +261,18 @@ def plotFemaleRisk():
 	dataKomm = getDeathRiskKommData()
 	data = {"scb" : dataScb["females"], "komm" : dataKomm["females"]}
 	plotRisk(data, "deathRiskFemales.html", "Females death risk")
+
+def plotFertilityGraph():
+	tfrSverige = [0, 0.01, 0.06, 0.21, 0.37, 0.89, 1.39, 2.34, 3.18, 4.02, 5.08, 6.30, 7.01, 8.48, 9.99, 11.51, 12.60, 13.93, 13.66, 14.02, 13.21, 12.53, 11.31, 9.62, 7.78, 5.82, 4.57, 3.49, 2.29, 1.05, 0.73, 0.51]
+	tfrKommData = getTfrKommData()
+	x = numpy.arange(14, 46, 1)
+	trace0 = go.Scatter(y = tfrSverige, x = x, name = 'TFR Sverige', line = dict(color = 'blue'))
+	trace1 = go.Scatter(y = tfrKommData["avgTfrKomm"], x = x, name = 'Average TFR Kommunen', line = dict(color = 'red'))
+	trace2 = go.Scatter(y = tfrKommData["tfrKomm2017"], x = x, name = 'TFR Kommunen 2017', line = dict(color = 'yellow'))
+	trace3 = go.Scatter(y = tfrKommData["tfrKomm2012_2017"], x = x, name = 'TFR Kommunen 2012-2017', line = dict(color = 'green'))
+	layout = go.Layout(title = "Total fertility rate")
+
+	plot(go.Figure(data = [trace0, trace1, trace2, trace3]), filename = "fertilityGraph.html")
 
 def plotDataFrameGraph(df, fileName, figTitle, xAxisTitle, yAxisTitle):
 	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
@@ -338,6 +372,7 @@ if __name__ == "__main__":
 	11. Female population heatmap without numbers
 	12. Males death risk
 	13. Females death risk
+	14. Total fertility rate
 	"""
 	print(initial_text)
 
@@ -369,6 +404,8 @@ if __name__ == "__main__":
 			plotMaleRisk()
 		elif cmd == '13':
 			plotFemaleRisk()
+		elif cmd == '14':
+			plotFertilityGraph()
 		elif cmd == 'q':
 			break
 		else:
