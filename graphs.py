@@ -111,6 +111,16 @@ def getBirthsData():
 
 	return birthsData
 
+def getImmigrationData():
+	global immigrationData
+
+	if immigrationData == None:
+		immgrationUrl = mainUrl + "BE0101J/Flyttningar97"
+		requestBodyForImmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AX"]}}],"response":{"format":"json"}}
+		immigrationData = getYearByYearDataFrame(immgrationUrl, requestBodyForImmigrationYearByYear)
+
+	return immigrationData
+
 def getPopulationByGenderDataframe():
 	return getPerTotalDataFrame(getPopulationData(), False)
 	
@@ -122,14 +132,7 @@ def getDeathsByGenderDataFrame():
 	return getPerTotalDataFrame(getDeathsData(), True)
 
 def getImmigrationByGenderDataFrame():
-	global immigrationData
-
-	if immigrationData == None:
-		immgrationUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForImmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AX"]}}],"response":{"format":"json"}}
-		immigrationData = getYearByYearDataFrame(immgrationUrl, requestBodyForImmigrationYearByYear)
-
-	return getPerTotalDataFrame(immigrationData, False)
+	return getPerTotalDataFrame(getImmigrationData(), False)
 
 def getEmigrationByGenderDataFrame():
 	global emigrationData
@@ -160,6 +163,26 @@ def getMoveoutsByGenderDataFrame():
 		moveoutsData = getYearByYearDataFrame(moveoutsUrl, requestBodyForMoveoutsYearByYear)
 
 	return getPerTotalDataFrame(moveoutsData, True)
+
+def calculatePredictions(dataFrame):
+	maleImmigration = list(dataFrame["male"])
+	femaleImmigration = list(dataFrame["female"])
+	numberOfElements = len(maleImmigration)
+	predictionEnd = 2037
+	startYear = dataFrame["year"][numberOfElements - 1] + 1
+	startIndex = 0;
+	femalePrediction = [femaleImmigration[numberOfElements - 1]]
+	maleValue = sum(maleImmigration) / numberOfElements
+	femaleValue = sum(femaleImmigration) / numberOfElements
+
+	malePrediction =  [maleValue] * (predictionEnd - startYear + 1)
+	femalePrediction = [femaleValue] * (predictionEnd - startYear + 1)
+	predictionYears = list(range(startYear - 1, predictionEnd + 1))
+
+	# for i in range(0, predictionEnd - startYear + 1):
+	# 	print((sum(maleImmigration[i : numberOfElements + 1]) + sum(malePrediction[0 : len(malePrediction) + 1])) / numberOfElements)
+
+	return {"year" : predictionYears, "malePrediction" : [maleImmigration[numberOfElements - 1]] + malePrediction, "femalePrediction" : [femaleImmigration[numberOfElements - 1]] + femalePrediction}
 
 def calculateScbData(data):
 	malesScb = []
@@ -274,19 +297,25 @@ def plotFertilityGraph():
 
 	plot(go.Figure(data = [trace0, trace1, trace2, trace3], layout = layout), filename = "fertilityGraph.html")
 
-def plotDataFrameGraph(df, fileName, figTitle, xAxisTitle, yAxisTitle):
+def plotDataFrameGraph(df, predictions, fileName, figTitle, xAxisTitle, yAxisTitle):
 	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
 	trace1 = go.Scatter(x = df['year'], y = df['female'], name = 'females', line = dict(color = 'red'))
 	layout = go.Layout(title = figTitle,  xaxis = dict(title = xAxisTitle), yaxis = dict(title = yAxisTitle))
 
-	plot(go.Figure(data = [trace0, trace1], layout = layout), filename = fileName)
+	if predictions != None:
+		trace2 = go.Scatter(x = predictions['year'], y = predictions['malePrediction'], name = 'prediction males', line = dict(color = 'green'))
+		trace3 = go.Scatter(x = predictions['year'], y = predictions['femalePrediction'], name = 'prediction females', line = dict(color = 'yellow'))
+		data = [trace0, trace1, trace2, trace3]
+	else:
+		data = [trace0, trace1]
+	plot(go.Figure(data = data, layout = layout), filename = fileName)
 
 def plotPopulationByGenderGraph():
 	fileName = "populationByGender.html";
 	figTitle = "Total population by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Population"
-	plotDataFrameGraph(getPopulationByGenderDataframe(), fileName, figTitle, xAxisTitle, yAxisTitle)
+	plotDataFrameGraph(getPopulationByGenderDataframe(), None, fileName, figTitle, xAxisTitle, yAxisTitle)
 
 
 def plotBirthsByGenderGraph():
@@ -294,42 +323,50 @@ def plotBirthsByGenderGraph():
 	figTitle = "Births by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Births"
-	plotDataFrameGraph(getBirthsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+	plotDataFrameGraph(getBirthsByGenderDataFrame(), None, fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotDeathsByGenderGraph():
 	fileName = "deathsByGender.html";
 	figTitle = "Deaths by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Deaths"
-	plotDataFrameGraph(getDeathsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+	plotDataFrameGraph(getDeathsByGenderDataFrame(), None, fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotImmigrationByGenderGraph():
 	fileName = "immigrationByGender.html";
 	figTitle = "Immigration by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
-	plotDataFrameGraph(getImmigrationByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+
+	immigrationDataFrame = getImmigrationByGenderDataFrame()
+	plotDataFrameGraph(immigrationDataFrame, calculatePredictions(immigrationDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotEmigrationByGenderGraph():
 	fileName = "emigrationByGender.html";
 	figTitle = "Emigration by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
-	plotDataFrameGraph(getEmigrationByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+
+	emigrationDataFrame = getEmigrationByGenderDataFrame()
+	plotDataFrameGraph(emigrationDataFrame, calculatePredictions(emigrationDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotMoveinsByGenderGraph():
 	fileName = "moveinsByGender.html";
 	figTitle = "Moveins within country";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
-	plotDataFrameGraph(getMoveinsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+
+	moveinsDataFrame = getMoveinsByGenderDataFrame()
+	plotDataFrameGraph(moveinsDataFrame, calculatePredictions(moveinsDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotMoveoutsByGenderGraph():
 	fileName = "moveoutsByGender.html";
 	figTitle = "Moveouts within country";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
-	plotDataFrameGraph(getMoveoutsByGenderDataFrame(), fileName, figTitle, xAxisTitle, yAxisTitle)
+
+	moveoutsDataFrame = getMoveoutsByGenderDataFrame() 
+	plotDataFrameGraph(moveoutsDataFrame, calculatePredictions(moveoutsDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotPopulationHeatMap(withNumbers, x, z, title, fileName):	
 	xAxisTitle = "Year"
@@ -362,10 +399,10 @@ if __name__ == "__main__":
 	1. Total population by gender(- prediction)
 	2. Births by gender(- prediction)
 	3. Deaths by gender(- prediction)
-	4. Immigration by gender(- prediction)
-	5. Emigration by gender(- prediction)
-	6. Moveins within country by gender(- prediction)
-	7. Moveouts within country by gender(- prediction)
+	4. Immigration by gender(+ prediction)
+	5. Emigration by gender(+ prediction)
+	6. Moveins within country by gender(+ prediction)
+	7. Moveouts within country by gender(+ prediction)
 	8. Male population heatmap with numbers
 	9. Female population heatmap with numbers
 	10. Male population heatmap without numbers
