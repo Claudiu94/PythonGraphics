@@ -290,6 +290,31 @@ def getBirthShares():
 	
 	return {"boyShare" : sum(maleShares) / len(maleShares), "girlShare" : sum(femaleShares) / len(femaleShares)}
 
+def getTfrSverige():
+	return [0, 0.01, 0.06, 0.21, 0.37, 0.89, 1.39, 2.34, 3.18, 4.02, 5.08, 6.30, 7.01, 8.48, 9.99, 11.51, 12.60, 13.93, 13.66, 14.02, 13.21, 12.53, 11.31, 9.62, 7.78, 5.82, 4.57, 3.49, 2.29, 1.05, 0.73, 0.51]
+
+def getPopulation_Births_Deaths_Predictions():
+	populationData = getPopulationData()
+	pMotherBirthAtX = getTfrSverige()
+	birthShares = getBirthShares()
+	# birthsData = getBirthsData()
+	femalesMatrix = populationData["dataFrame"]["femalesMatrix"]
+	maleBirthsPredictions = []
+	femaleBirthsPredictions = []
+	startIndex = 14
+	maleBirthPrediction = 0
+	femaleBirthPrediction = 0
+
+	# print(len(pMotherBirthAtX))
+	for i in range(0, 32):
+		commonPart = femalesMatrix[14 + i][len(femalesMatrix[0]) - 1] * (pMotherBirthAtX[i] / 100)
+		maleBirthPrediction +=  commonPart 
+		femaleBirthPrediction += commonPart
+
+	print(maleBirthPrediction * birthShares["boyShare"])
+	print(femaleBirthPrediction * birthShares["girlShare"])
+
+
 def plotRisk(data, fileName, figTitle):
 	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
 	trace1 = go.Scatter(y = data["komm"], name = 'Kommun medel', line = dict(color = 'red'))
@@ -309,7 +334,7 @@ def plotFemaleRisk():
 	plotRisk(data, "deathRiskFemales.html", "Females death risk")
 
 def plotFertilityGraph():
-	tfrSverige = [0, 0.01, 0.06, 0.21, 0.37, 0.89, 1.39, 2.34, 3.18, 4.02, 5.08, 6.30, 7.01, 8.48, 9.99, 11.51, 12.60, 13.93, 13.66, 14.02, 13.21, 12.53, 11.31, 9.62, 7.78, 5.82, 4.57, 3.49, 2.29, 1.05, 0.73, 0.51]
+	tfrSverige = getTfrSverige()
 	tfrKommData = getTfrKommData()
 	x = numpy.arange(14, 46, 1)
 	trace0 = go.Scatter(y = tfrSverige, x = x, name = 'TFR Sverige', line = dict(color = 'blue'))
@@ -470,3 +495,4 @@ if __name__ == "__main__":
 	# 		break
 	# 	else:
 	# 		print("Invalid command.")
+	getPopulation_Births_Deaths_Predictions()
