@@ -266,6 +266,29 @@ def getTfrKommData():
 
 	return {"avgTfrKomm" : avgTfrKomm, "tfrKomm2017" : tfrKomm2017, "tfrKomm2012_2017" : tfrKomm2012_2017}
 
+def getBirthShares():
+	totalBirthsUrl = mainUrl + "/BE0101H/FoddaK"
+	requestTotalBirths = {"query":[{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"Tid","selection":{"filter":"item","values":["2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017"]}}],"response":{"format":"json"}}
+	males = []
+	females = []
+	maleShares = []
+	femaleShares = []
+	response = request.post(url = totalBirthsUrl, json = requestTotalBirths, headers = headers);
+	json_data = simplejson.loads(response.text)["data"]
+	
+	for val in json_data:
+		# male
+		if val["key"][0] == "1":
+			males.append(int(val["values"][0]))
+		else:
+			females.append(int(val["values"][0]))
+
+	for i in range(0, len(males)):
+		total = males[i] + females[i]
+		maleShares.append(males[i] / total)
+		femaleShares.append(females[i] / total)
+	
+	return {"boyShare" : sum(maleShares) / len(maleShares), "girlShare" : sum(femaleShares) / len(femaleShares)}
 
 def plotRisk(data, fileName, figTitle):
 	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
@@ -395,55 +418,55 @@ def plotFemalePopulationHeatmap(withNumbers):
 
 
 if __name__ == "__main__":
-	initial_text = """
-	1. Total population by gender(- prediction)
-	2. Births by gender(- prediction)
-	3. Deaths by gender(- prediction)
-	4. Immigration by gender(+ prediction)
-	5. Emigration by gender(+ prediction)
-	6. Moveins within country by gender(+ prediction)
-	7. Moveouts within country by gender(+ prediction)
-	8. Male population heatmap with numbers
-	9. Female population heatmap with numbers
-	10. Male population heatmap without numbers
-	11. Female population heatmap without numbers
-	12. Males death risk
-	13. Females death risk
-	14. Total fertility rate
-	"""
-	print(initial_text)
+	# initial_text = """
+	# 1. Total population by gender(- prediction)
+	# 2. Births by gender(- prediction)
+	# 3. Deaths by gender(- prediction)
+	# 4. Immigration by gender(+ prediction)
+	# 5. Emigration by gender(+ prediction)
+	# 6. Moveins within country by gender(+ prediction)
+	# 7. Moveouts within country by gender(+ prediction)
+	# 8. Male population heatmap with numbers
+	# 9. Female population heatmap with numbers
+	# 10. Male population heatmap without numbers
+	# 11. Female population heatmap without numbers
+	# 12. Males death risk
+	# 13. Females death risk
+	# 14. Total fertility rate
+	# """
+	# print(initial_text)
 
-	while True:
-		cmd = input("Enter a number to select graph, or q to exit: ")
-		if cmd == '1':
-			plotPopulationByGenderGraph()
-		elif cmd == '2':
-			plotBirthsByGenderGraph()
-		elif cmd == '3':
-			plotDeathsByGenderGraph()
-		elif cmd == '4':
-			plotImmigrationByGenderGraph()
-		elif cmd == '5':
-			plotEmigrationByGenderGraph()
-		elif cmd == '6':
-			plotMoveinsByGenderGraph()
-		elif cmd == '7':
-			plotMoveoutsByGenderGraph()
-		elif cmd == '8':
-			plotMalePopulationHeatmap(True)
-		elif cmd == '9':
-			plotFemalePopulationHeatmap(True)
-		elif cmd == '10':
-			plotMalePopulationHeatmap(False)
-		elif cmd == '11':
-			plotFemalePopulationHeatmap(False)
-		elif cmd == '12':
-			plotMaleRisk()
-		elif cmd == '13':
-			plotFemaleRisk()
-		elif cmd == '14':
-			plotFertilityGraph()
-		elif cmd == 'q':
-			break
-		else:
-			print("Invalid command.")
+	# while True:
+	# 	cmd = input("Enter a number to select graph, or q to exit: ")
+	# 	if cmd == '1':
+	# 		plotPopulationByGenderGraph()
+	# 	elif cmd == '2':
+	# 		plotBirthsByGenderGraph()
+	# 	elif cmd == '3':
+	# 		plotDeathsByGenderGraph()
+	# 	elif cmd == '4':
+	# 		plotImmigrationByGenderGraph()
+	# 	elif cmd == '5':
+	# 		plotEmigrationByGenderGraph()
+	# 	elif cmd == '6':
+	# 		plotMoveinsByGenderGraph()
+	# 	elif cmd == '7':
+	# 		plotMoveoutsByGenderGraph()
+	# 	elif cmd == '8':
+	# 		plotMalePopulationHeatmap(True)
+	# 	elif cmd == '9':
+	# 		plotFemalePopulationHeatmap(True)
+	# 	elif cmd == '10':
+	# 		plotMalePopulationHeatmap(False)
+	# 	elif cmd == '11':
+	# 		plotFemalePopulationHeatmap(False)
+	# 	elif cmd == '12':
+	# 		plotMaleRisk()
+	# 	elif cmd == '13':
+	# 		plotFemaleRisk()
+	# 	elif cmd == '14':
+	# 		plotFertilityGraph()
+	# 	elif cmd == 'q':
+	# 		break
+	# 	else:
+	# 		print("Invalid command.")
