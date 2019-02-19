@@ -297,23 +297,55 @@ def getPopulation_Births_Deaths_Predictions():
 	populationData = getPopulationData()
 	pMotherBirthAtX = getTfrSverige()
 	birthShares = getBirthShares()
+	deathRiskScb = getDeathRiskScbData()
+	birthsByGender = getBirthsByGenderDataFrame()
+	moveoutsByGender = getMoveoutsByGenderDataFrame()
+	moveinsByGender = getMoveinsByGenderDataFrame()
+	immigrationByGender = getImmigrationByGenderDataFrame()
+	emigrationByGender = getEmigrationByGenderDataFrame()
 	# birthsData = getBirthsData()
 	femalesMatrix = populationData["dataFrame"]["femalesMatrix"]
+	malesMatrix = populationData["dataFrame"]["malesMatrix"]
+	malePopulationPredictions = []
+	femalePopulationPredictions = []
 	maleBirthsPredictions = []
 	femaleBirthsPredictions = []
+	maleDeathsPredictions = []
+	femaleDeathsPredictions = []
 	startIndex = 14
 	maleBirthPrediction = 0
 	femaleBirthPrediction = 0
+	maleDeathPrediction = 0
+	femaleDeathPrediction = 0
 
-	# print(len(pMotherBirthAtX))
+	#first value for births predictions
 	for i in range(0, 32):
 		commonPart = femalesMatrix[14 + i][len(femalesMatrix[0]) - 1] * (pMotherBirthAtX[i] / 100)
 		maleBirthPrediction +=  commonPart 
 		femaleBirthPrediction += commonPart
 
-	print(maleBirthPrediction * birthShares["boyShare"])
-	print(femaleBirthPrediction * birthShares["girlShare"])
+	maleBirthsPredictions.append(maleBirthPrediction * birthShares["boyShare"])
+	femaleBirthsPredictions.append(femaleBirthPrediction * birthShares["girlShare"])
 
+	# first value for deaths prediction
+	for i in range(0, len(deathRiskScb["males"])):
+		maleDeathPrediction += -(malesMatrix[i][len(malesMatrix[0]) - 1] * deathRiskScb["males"][i] / 100)
+		femaleDeathPrediction += -(femalesMatrix[i][len(femalesMatrix[0]) - 1] * deathRiskScb["females"][i] / 100)
+
+	maleDeathsPredictions.append(maleDeathPrediction)
+	femaleDeathsPredictions.append(femaleDeathPrediction)
+
+	# first values for population predictions
+	# X = 0
+	malePopulationPredictions.append([birthsByGender["male"][len(birthsByGender["male"]) - 1] + moveinsByGender["male"][len(moveinsByGender["male"]) - 1]
+		+ moveoutsByGender["male"][len(moveoutsByGender["male"]) - 1] + immigrationByGender["male"][len(immigrationByGender["male"]) - 1]
+		+ emigrationByGender["male"][len(emigrationByGender["male"]) - 1]])
+	femalePopulationPredictions.append([birthsByGender["female"][len(birthsByGender["female"]) - 1] + moveinsByGender["female"][len(moveinsByGender["female"]) - 1]
+		+ moveoutsByGender["female"][len(moveoutsByGender["female"]) - 1] + immigrationByGender["female"][len(immigrationByGender["female"]) - 1]
+		+ emigrationByGender["female"][len(emigrationByGender["female"]) - 1]])
+
+	# X > 0
+	print(malePopulationPredictions)
 
 def plotRisk(data, fileName, figTitle):
 	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
