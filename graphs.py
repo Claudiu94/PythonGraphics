@@ -183,7 +183,7 @@ def calculatePredictions(dataFrame):
 	femalePrediction = [femaledata[numberOfElements - 1]]
 	maleValue = sum(maleData) / numberOfElements
 	femaleValue = sum(femaledata) / numberOfElements
-	print(maleData)
+
 	malePrediction =  [maleValue] * (predictionEnd - startYear + 1)
 	femalePrediction = [femaleValue] * (predictionEnd - startYear + 1)
 
@@ -405,16 +405,7 @@ def getPopulation_Births_Deaths_Predictions():
 
 	malePopulationTotalPredictions.append(sumMales)
 	femalePopulationTotalPredictions.append(sumFemales)
-	# print(maleBirthsPredictions[0])
-	# print(-getPredictionAtAge(0, "moveouts", "male", True))
-	# print(getPredictionAtAge(0, "moveins", "male", True))
-	# print(-getPredictionAtAge(0, "emigration", "male", True))
-	# print(getPredictionAtAge(0, "immigration", "male", True))
-	# print(malesMatrix[0][len(malesMatrix[0]) - 1])
-	# print(malesDeathsMatrix[0][len(malesDeathsMatrix[0]) - 1])
-	# print(malePopulationTotalPredictions)
-	# print(femalePopulationTotalPredictions)
-	# print(malePopulationPredictions)
+
 	for i in range(1, lastYear - firstYear + 1):
 		maleBirthPrediction = 0
 		femaleBirthPrediction = 0
