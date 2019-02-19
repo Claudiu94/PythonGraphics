@@ -10,6 +10,7 @@ import pandas as pd
 
 headers = {"Content-type": "application/json"}
 mainUrl = "http://api.scb.se/OV0104/v1/doris/en/ssd/START/BE/BE0101/"
+populationBirthsDeathsPredictionsCache = None
 populationData = None
 birthsData = None
 deathsData = None
@@ -121,6 +122,35 @@ def getImmigrationData():
 
 	return immigrationData
 
+def getEmigrationData():
+	global emigrationData
+
+	if emigrationData == None:
+		emigrationUrl = mainUrl + "BE0101J/Flyttningar97"
+		requestBodyForEmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AY"]}}],"response":{"format":"json"}}	
+		emigrationData = getYearByYearDataFrame(emigrationUrl, requestBodyForEmigrationYearByYear)
+
+	return emigrationData
+def getMoveinsData():
+	global moveinsData
+
+	if moveinsData == None:
+		moveinsUrl = mainUrl + "BE0101J/Flyttningar97"
+		requestBodyForMoveinsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A2"]}}],"response":{"format":"json"}}
+		moveinsData = getYearByYearDataFrame(moveinsUrl, requestBodyForMoveinsYearByYear)
+
+	return moveinsData
+
+def getMoveoutsData():
+	global moveoutsData
+
+	if moveoutsData == None:
+		moveoutsUrl = mainUrl + "BE0101J/Flyttningar97"
+		requestBodyForMoveoutsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A3"]}}],"response":{"format":"json"}}
+		moveoutsData = getYearByYearDataFrame(moveoutsUrl, requestBodyForMoveoutsYearByYear)
+
+	return moveoutsData
+
 def getPopulationByGenderDataframe():
 	return getPerTotalDataFrame(getPopulationData(), False)
 	
@@ -135,54 +165,32 @@ def getImmigrationByGenderDataFrame():
 	return getPerTotalDataFrame(getImmigrationData(), False)
 
 def getEmigrationByGenderDataFrame():
-	global emigrationData
-
-	if emigrationData == None:
-		emigrationUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForEmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AY"]}}],"response":{"format":"json"}}	
-		emigrationData = getYearByYearDataFrame(emigrationUrl, requestBodyForEmigrationYearByYear)
-
-	return getPerTotalDataFrame(emigrationData, True)
+	return getPerTotalDataFrame(getEmigrationData(), True)
 
 def getMoveinsByGenderDataFrame():
-	global moveinsData
-
-	if moveinsData == None:
-		moveinsUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForMoveinsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A2"]}}],"response":{"format":"json"}}
-		moveinsData = getYearByYearDataFrame(moveinsUrl, requestBodyForMoveinsYearByYear)
-
-	return getPerTotalDataFrame(moveinsData, False)
+	return getPerTotalDataFrame(getMoveinsData(), False)
 
 def getMoveoutsByGenderDataFrame():
-	global moveoutsData
-
-	if moveoutsData == None:
-		moveoutsUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForMoveoutsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A3"]}}],"response":{"format":"json"}}
-		moveoutsData = getYearByYearDataFrame(moveoutsUrl, requestBodyForMoveoutsYearByYear)
-
-	return getPerTotalDataFrame(moveoutsData, True)
+	return getPerTotalDataFrame(getMoveoutsData(), True)
 
 def calculatePredictions(dataFrame):
-	maleImmigration = list(dataFrame["male"])
-	femaleImmigration = list(dataFrame["female"])
-	numberOfElements = len(maleImmigration)
+	maleData = list(dataFrame["male"])
+	femaledata = list(dataFrame["female"])
+	numberOfElements = len(maleData)
 	predictionEnd = 2037
 	startYear = dataFrame["year"][numberOfElements - 1] + 1
 	startIndex = 0;
-	femalePrediction = [femaleImmigration[numberOfElements - 1]]
-	maleValue = sum(maleImmigration) / numberOfElements
-	femaleValue = sum(femaleImmigration) / numberOfElements
-
+	femalePrediction = [femaledata[numberOfElements - 1]]
+	maleValue = sum(maleData) / numberOfElements
+	femaleValue = sum(femaledata) / numberOfElements
+	print(maleData)
 	malePrediction =  [maleValue] * (predictionEnd - startYear + 1)
 	femalePrediction = [femaleValue] * (predictionEnd - startYear + 1)
-	predictionYears = list(range(startYear - 1, predictionEnd + 1))
 
 	# for i in range(0, predictionEnd - startYear + 1):
-	# 	print((sum(maleImmigration[i : numberOfElements + 1]) + sum(malePrediction[0 : len(malePrediction) + 1])) / numberOfElements)
+	# 	print((sum(maleData[i : numberOfElements + 1]) + sum(malePrediction[0 : len(malePrediction) + 1])) / numberOfElements)
 
-	return {"year" : predictionYears, "malePrediction" : [maleImmigration[numberOfElements - 1]] + malePrediction, "femalePrediction" : [femaleImmigration[numberOfElements - 1]] + femalePrediction}
+	return {"malePrediction" : malePrediction, "femalePrediction" : femalePrediction}
 
 def calculateScbData(data):
 	malesScb = []
@@ -293,33 +301,69 @@ def getBirthShares():
 def getTfrSverige():
 	return [0, 0.01, 0.06, 0.21, 0.37, 0.89, 1.39, 2.34, 3.18, 4.02, 5.08, 6.30, 7.01, 8.48, 9.99, 11.51, 12.60, 13.93, 13.66, 14.02, 13.21, 12.53, 11.31, 9.62, 7.78, 5.82, 4.57, 3.49, 2.29, 1.05, 0.73, 0.51]
 
+def getPredictionAtAge(age, type, sex, firstYear):
+	data = None
+	line = None
+
+	if type == "immigration":
+		data = getImmigrationData()["dataFrame"]
+	elif type == "emigration":
+		data = getEmigrationData()["dataFrame"]
+	elif type == "moveins":
+		data = getMoveinsData()["dataFrame"]
+	elif type == "moveouts":
+		data = getMoveoutsData()["dataFrame"]
+
+	if sex == "male":
+		line = data["malesMatrix"][age]
+	elif sex =="female":
+		line = data["femalesMatrix"][age]
+
+	if line != None:
+		if firstYear:
+			return line[len(line) - 1]
+		else:
+			return sum(line) / len(line)
+	else:
+		return None
+
 def getPopulation_Births_Deaths_Predictions():
+	global populationBirthsDeathsPredictionsCache
+
+	if populationBirthsDeathsPredictionsCache != None:
+		return populationBirthsDeathsPredictionsCache
+
 	populationData = getPopulationData()
+	deathsData = getDeathsData()
 	pMotherBirthAtX = getTfrSverige()
 	birthShares = getBirthShares()
 	deathRiskScb = getDeathRiskScbData()
-	birthsByGender = getBirthsByGenderDataFrame()
-	moveoutsByGender = getMoveoutsByGenderDataFrame()
-	moveinsByGender = getMoveinsByGenderDataFrame()
-	immigrationByGender = getImmigrationByGenderDataFrame()
-	emigrationByGender = getEmigrationByGenderDataFrame()
-	# birthsData = getBirthsData()
-	femalesMatrix = populationData["dataFrame"]["femalesMatrix"]
 	malesMatrix = populationData["dataFrame"]["malesMatrix"]
+	femalesMatrix = populationData["dataFrame"]["femalesMatrix"]
+	malesDeathsMatrix = deathsData["dataFrame"]["malesMatrix"]
+	femalesDeathsMatrix = deathsData["dataFrame"]["femalesMatrix"]
 	malePopulationPredictions = []
 	femalePopulationPredictions = []
+	malePopulationTotalPredictions = []
+	femalePopulationTotalPredictions = []
 	maleBirthsPredictions = []
 	femaleBirthsPredictions = []
 	maleDeathsPredictions = []
 	femaleDeathsPredictions = []
+	maleDeathsTotalPredictions = []
+	femaleDeathsTotalPredictions = []
 	startIndex = 14
 	maleBirthPrediction = 0
 	femaleBirthPrediction = 0
 	maleDeathPrediction = 0
 	femaleDeathPrediction = 0
+	lastYear = 2037
+	firstYear = 2018
+	motherStartAge = 14
+	motherEndAge = 45
 
 	#first value for births predictions
-	for i in range(0, 32):
+	for i in range(0, motherEndAge - motherStartAge + 1):
 		commonPart = femalesMatrix[14 + i][len(femalesMatrix[0]) - 1] * (pMotherBirthAtX[i] / 100)
 		maleBirthPrediction +=  commonPart 
 		femaleBirthPrediction += commonPart
@@ -329,23 +373,97 @@ def getPopulation_Births_Deaths_Predictions():
 
 	# first value for deaths prediction
 	for i in range(0, len(deathRiskScb["males"])):
-		maleDeathPrediction += -(malesMatrix[i][len(malesMatrix[0]) - 1] * deathRiskScb["males"][i] / 100)
-		femaleDeathPrediction += -(femalesMatrix[i][len(femalesMatrix[0]) - 1] * deathRiskScb["females"][i] / 100)
+		maleDeathsPredictions.append([-(malesMatrix[i][len(malesMatrix[0]) - 1] * deathRiskScb["males"][i] / 100)])
+		femaleDeathsPredictions.append([-(femalesMatrix[i][len(femalesMatrix[0]) - 1] * deathRiskScb["females"][i] / 100)])
+		maleDeathPrediction += maleDeathsPredictions[i][0]
+		femaleDeathPrediction += femaleDeathsPredictions[i][0]
 
-	maleDeathsPredictions.append(maleDeathPrediction)
-	femaleDeathsPredictions.append(femaleDeathPrediction)
+	maleDeathsTotalPredictions.append(maleDeathPrediction)
+	femaleDeathsTotalPredictions.append(femaleDeathPrediction)
 
 	# first values for population predictions
 	# X = 0
-	malePopulationPredictions.append([birthsByGender["male"][len(birthsByGender["male"]) - 1] + moveinsByGender["male"][len(moveinsByGender["male"]) - 1]
-		+ moveoutsByGender["male"][len(moveoutsByGender["male"]) - 1] + immigrationByGender["male"][len(immigrationByGender["male"]) - 1]
-		+ emigrationByGender["male"][len(emigrationByGender["male"]) - 1]])
-	femalePopulationPredictions.append([birthsByGender["female"][len(birthsByGender["female"]) - 1] + moveinsByGender["female"][len(moveinsByGender["female"]) - 1]
-		+ moveoutsByGender["female"][len(moveoutsByGender["female"]) - 1] + immigrationByGender["female"][len(immigrationByGender["female"]) - 1]
-		+ emigrationByGender["female"][len(emigrationByGender["female"]) - 1]])
+	malePopulationPredictions.append([maleBirthsPredictions[0] - getPredictionAtAge(0, "moveouts", "male", True)
+		+ getPredictionAtAge(0, "moveins", "male", True) - getPredictionAtAge(0, "emigration", "male", True) 
+		+ getPredictionAtAge(0, "immigration", "male", True)])
+	femalePopulationPredictions.append([femaleBirthsPredictions[0] - getPredictionAtAge(0, "moveouts", "female", True)
+		+ getPredictionAtAge(0, "moveins", "female", True) - getPredictionAtAge(0, "emigration", "female", True) 
+		+ getPredictionAtAge(0, "immigration", "female", True)])
 
+	sumMales = malePopulationPredictions[0][0]
+	sumFemales = femalePopulationPredictions[0][0]
 	# X > 0
-	print(malePopulationPredictions)
+	for i in range(1, 101):
+		malePopulationPredictions.append([max(malesMatrix[i - 1][len(malesMatrix[i - 1]) - 1] - malesDeathsMatrix[i - 1][len(malesMatrix[i - 1]) - 1]
+			- getPredictionAtAge(i, "moveouts", "male", True) + getPredictionAtAge(i, "moveins", "male", True)
+			- getPredictionAtAge(i, "emigration", "male", True) + getPredictionAtAge(i, "immigration", "male", True), 0)])
+		femalePopulationPredictions.append([max(femalesMatrix[i - 1][len(femalesMatrix[i - 1]) - 1] - femalesDeathsMatrix[i - 1][len(femalesMatrix[i - 1]) - 1]
+			- getPredictionAtAge(i, "moveouts", "female", True) + getPredictionAtAge(i, "moveins", "female", True)
+			- getPredictionAtAge(i, "emigration", "female", True) + getPredictionAtAge(i, "immigration", "female", True), 0)])
+		sumMales += malePopulationPredictions[i][0]
+		sumFemales += femalePopulationPredictions[i][0]
+
+	malePopulationTotalPredictions.append(sumMales)
+	femalePopulationTotalPredictions.append(sumFemales)
+	# print(maleBirthsPredictions[0])
+	# print(-getPredictionAtAge(0, "moveouts", "male", True))
+	# print(getPredictionAtAge(0, "moveins", "male", True))
+	# print(-getPredictionAtAge(0, "emigration", "male", True))
+	# print(getPredictionAtAge(0, "immigration", "male", True))
+	# print(malesMatrix[0][len(malesMatrix[0]) - 1])
+	# print(malesDeathsMatrix[0][len(malesDeathsMatrix[0]) - 1])
+	# print(malePopulationTotalPredictions)
+	# print(femalePopulationTotalPredictions)
+	# print(malePopulationPredictions)
+	for i in range(1, lastYear - firstYear + 1):
+		maleBirthPrediction = 0
+		femaleBirthPrediction = 0
+		for j in range(0, motherEndAge - motherStartAge + 1):
+			commonPart = femalePopulationPredictions[14 + j][i - 1] * (pMotherBirthAtX[j] / 100)
+			maleBirthPrediction +=  commonPart 
+			femaleBirthPrediction += commonPart
+		maleBirthsPredictions.append(maleBirthPrediction * birthShares["boyShare"])
+		femaleBirthsPredictions.append(femaleBirthPrediction * birthShares["girlShare"])
+
+		maleDeathPrediction = 0
+		femaleDeathPrediction = 0
+		for j in range(0, len(deathRiskScb["males"])):
+			maleDeathsPredictions[j].append(-(malePopulationPredictions[j][i - 1] * deathRiskScb["males"][j] / 100))
+			femaleDeathsPredictions[j].append(-(femalePopulationPredictions[j][i - 1] * deathRiskScb["females"][j] / 100))
+			maleDeathPrediction += maleDeathsPredictions[j][i]
+			femaleDeathPrediction += femaleDeathsPredictions[j][i]
+		maleDeathsTotalPredictions.append(maleDeathPrediction)
+		femaleDeathsTotalPredictions.append(femaleDeathPrediction)
+
+		# first values for population predictions
+		# X = 0
+		malePopulationPredictions[0].append(maleBirthsPredictions[i] - getPredictionAtAge(0, "moveouts", "male", False)
+			+ getPredictionAtAge(0, "moveins", "male", False) - getPredictionAtAge(0, "emigration", "male", False) 
+			+ getPredictionAtAge(0, "immigration", "male", False))
+		femalePopulationPredictions[0].append(femaleBirthsPredictions[i] - getPredictionAtAge(0, "moveouts", "female", False)
+			+ getPredictionAtAge(0, "moveins", "female", False) - getPredictionAtAge(0, "emigration", "female", False) 
+			+ getPredictionAtAge(0, "immigration", "female", False))
+
+		sumMales = malePopulationPredictions[0][i]
+		sumFemales = femalePopulationPredictions[0][i]
+
+		# X > 0
+		for j in range(1, 101):
+			malePopulationPredictions[j].append(max(malePopulationPredictions[j - 1][i - 1] + maleDeathsPredictions[j - 1][i - 1]
+				- getPredictionAtAge(j, "moveouts", "male", False) + getPredictionAtAge(j, "moveins", "male", False)
+				- getPredictionAtAge(j, "emigration", "male", False) + getPredictionAtAge(j, "immigration", "male", False), 0))
+			femalePopulationPredictions[j].append(max(femalePopulationPredictions[j - 1][i - 1] + femaleDeathsPredictions[j - 1][i - 1]
+				- getPredictionAtAge(j, "moveouts", "female", False) + getPredictionAtAge(j, "moveins", "female", False)
+				- getPredictionAtAge(j, "emigration", "female", False) + getPredictionAtAge(j, "immigration", "female", False), 0))
+			sumMales += malePopulationPredictions[j][i]
+			sumFemales += femalePopulationPredictions[j][i]
+		malePopulationTotalPredictions.append(sumMales)
+		femalePopulationTotalPredictions.append(sumFemales)
+
+	populationBirthsDeathsPredictionsCache = {"male" : {"populationPredictions" : malePopulationTotalPredictions, "birthsPredictions" : maleBirthsPredictions, "deathsPredictions" : maleDeathsTotalPredictions},
+											"female" : {"populationPredictions" : femalePopulationTotalPredictions, "birthsPredictions" : femaleBirthsPredictions, "deathsPredictions" : femaleDeathsTotalPredictions}}
+
+	return populationBirthsDeathsPredictionsCache
 
 def plotRisk(data, fileName, figTitle):
 	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
@@ -383,8 +501,11 @@ def plotDataFrameGraph(df, predictions, fileName, figTitle, xAxisTitle, yAxisTit
 	layout = go.Layout(title = figTitle,  xaxis = dict(title = xAxisTitle), yaxis = dict(title = yAxisTitle))
 
 	if predictions != None:
-		trace2 = go.Scatter(x = predictions['year'], y = predictions['malePrediction'], name = 'prediction males', line = dict(color = 'green'))
-		trace3 = go.Scatter(x = predictions['year'], y = predictions['femalePrediction'], name = 'prediction females', line = dict(color = 'yellow'))
+		predictionEnd = 2037
+		startYear = df["year"][len(df["year"]) - 1]
+		predictionYears = list(range(startYear, predictionEnd + 1))
+		trace2 = go.Scatter(x = predictionYears, y = [df['male'][len(df['male']) - 1]] + predictions['malePrediction'], name = 'prediction males', line = dict(color = 'green'))
+		trace3 = go.Scatter(x = predictionYears, y = [df['female'][len(df['female']) - 1]] + predictions['femalePrediction'], name = 'prediction females', line = dict(color = 'yellow'))
 		data = [trace0, trace1, trace2, trace3]
 	else:
 		data = [trace0, trace1]
@@ -395,7 +516,9 @@ def plotPopulationByGenderGraph():
 	figTitle = "Total population by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Population"
-	plotDataFrameGraph(getPopulationByGenderDataframe(), None, fileName, figTitle, xAxisTitle, yAxisTitle)
+	predictions = getPopulation_Births_Deaths_Predictions()
+	populationPredictions = {"malePrediction" : predictions["male"]["populationPredictions"], "femalePrediction" : predictions["female"]["populationPredictions"]}
+	plotDataFrameGraph(getPopulationByGenderDataframe(), populationPredictions, fileName, figTitle, xAxisTitle, yAxisTitle)
 
 
 def plotBirthsByGenderGraph():
@@ -403,14 +526,18 @@ def plotBirthsByGenderGraph():
 	figTitle = "Births by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Births"
-	plotDataFrameGraph(getBirthsByGenderDataFrame(), None, fileName, figTitle, xAxisTitle, yAxisTitle)
+	predictions = getPopulation_Births_Deaths_Predictions()
+	birthsPredictions = {"malePrediction" : predictions["male"]["birthsPredictions"], "femalePrediction" : predictions["female"]["birthsPredictions"]}
+	plotDataFrameGraph(getBirthsByGenderDataFrame(), birthsPredictions, fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotDeathsByGenderGraph():
 	fileName = "deathsByGender.html";
 	figTitle = "Deaths by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Deaths"
-	plotDataFrameGraph(getDeathsByGenderDataFrame(), None, fileName, figTitle, xAxisTitle, yAxisTitle)
+	predictions = getPopulation_Births_Deaths_Predictions()
+	deathsPredictions = {"malePrediction" : predictions["male"]["deathsPredictions"], "femalePrediction" : predictions["female"]["deathsPredictions"]}
+	plotDataFrameGraph(getDeathsByGenderDataFrame(), deathsPredictions, fileName, figTitle, xAxisTitle, yAxisTitle)
 
 def plotImmigrationByGenderGraph():
 	fileName = "immigrationByGender.html";
@@ -475,56 +602,55 @@ def plotFemalePopulationHeatmap(withNumbers):
 
 
 if __name__ == "__main__":
-	# initial_text = """
-	# 1. Total population by gender(- prediction)
-	# 2. Births by gender(- prediction)
-	# 3. Deaths by gender(- prediction)
-	# 4. Immigration by gender(+ prediction)
-	# 5. Emigration by gender(+ prediction)
-	# 6. Moveins within country by gender(+ prediction)
-	# 7. Moveouts within country by gender(+ prediction)
-	# 8. Male population heatmap with numbers
-	# 9. Female population heatmap with numbers
-	# 10. Male population heatmap without numbers
-	# 11. Female population heatmap without numbers
-	# 12. Males death risk
-	# 13. Females death risk
-	# 14. Total fertility rate
-	# """
-	# print(initial_text)
+	initial_text = """
+	1. Total population by gender(+ prediction)
+	2. Births by gender(+ prediction)
+	3. Deaths by gender(+ prediction)
+	4. Immigration by gender(+ prediction)
+	5. Emigration by gender(+ prediction)
+	6. Moveins within country by gender(+ prediction)
+	7. Moveouts within country by gender(+ prediction)
+	8. Male population heatmap with numbers
+	9. Female population heatmap with numbers
+	10. Male population heatmap without numbers
+	11. Female population heatmap without numbers
+	12. Males death risk
+	13. Females death risk
+	14. Total fertility rate
+	"""
+	print(initial_text)
 
-	# while True:
-	# 	cmd = input("Enter a number to select graph, or q to exit: ")
-	# 	if cmd == '1':
-	# 		plotPopulationByGenderGraph()
-	# 	elif cmd == '2':
-	# 		plotBirthsByGenderGraph()
-	# 	elif cmd == '3':
-	# 		plotDeathsByGenderGraph()
-	# 	elif cmd == '4':
-	# 		plotImmigrationByGenderGraph()
-	# 	elif cmd == '5':
-	# 		plotEmigrationByGenderGraph()
-	# 	elif cmd == '6':
-	# 		plotMoveinsByGenderGraph()
-	# 	elif cmd == '7':
-	# 		plotMoveoutsByGenderGraph()
-	# 	elif cmd == '8':
-	# 		plotMalePopulationHeatmap(True)
-	# 	elif cmd == '9':
-	# 		plotFemalePopulationHeatmap(True)
-	# 	elif cmd == '10':
-	# 		plotMalePopulationHeatmap(False)
-	# 	elif cmd == '11':
-	# 		plotFemalePopulationHeatmap(False)
-	# 	elif cmd == '12':
-	# 		plotMaleRisk()
-	# 	elif cmd == '13':
-	# 		plotFemaleRisk()
-	# 	elif cmd == '14':
-	# 		plotFertilityGraph()
-	# 	elif cmd == 'q':
-	# 		break
-	# 	else:
-	# 		print("Invalid command.")
-	getPopulation_Births_Deaths_Predictions()
+	while True:
+		cmd = input("Enter a number to select graph, or q to exit: ")
+		if cmd == '1':
+			plotPopulationByGenderGraph()
+		elif cmd == '2':
+			plotBirthsByGenderGraph()
+		elif cmd == '3':
+			plotDeathsByGenderGraph()
+		elif cmd == '4':
+			plotImmigrationByGenderGraph()
+		elif cmd == '5':
+			plotEmigrationByGenderGraph()
+		elif cmd == '6':
+			plotMoveinsByGenderGraph()
+		elif cmd == '7':
+			plotMoveoutsByGenderGraph()
+		elif cmd == '8':
+			plotMalePopulationHeatmap(True)
+		elif cmd == '9':
+			plotFemalePopulationHeatmap(True)
+		elif cmd == '10':
+			plotMalePopulationHeatmap(False)
+		elif cmd == '11':
+			plotFemalePopulationHeatmap(False)
+		elif cmd == '12':
+			plotMaleRisk()
+		elif cmd == '13':
+			plotFemaleRisk()
+		elif cmd == '14':
+			plotFertilityGraph()
+		elif cmd == 'q':
+			break
+		else:
+			print("Invalid command.")
