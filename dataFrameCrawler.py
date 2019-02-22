@@ -6,13 +6,13 @@ import pandas as pd
 
 headers = {"Content-type": "application/json"}
 mainUrl = "http://api.scb.se/OV0104/v1/doris/en/ssd/START/BE/BE0101/"
-populationData = None
-birthsData = None
-deathsData = None
-immigrationData = None
-emigrationData = None
-moveinsData = None
-moveoutsData = None
+populationData = {}
+birthsData = {}
+deathsData = {}
+immigrationData = {}
+emigrationData = {}
+moveinsData = {}
+moveoutsData = {}
 deathRiskData = None
 kommData = None
 scbData = None
@@ -77,76 +77,76 @@ def getPerYearTotalDataFrame(allData, negativeValues):
 	return dataFrame;
 
 
-def getPopulationData():
+def getPopulationData(code):
 	global populationData
 
-	if populationData == None:
+	if code not in populationData:
 		populationUrl = mainUrl + "BE0101A/BefolkningNy"
-		requestBodyForPopulationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101N1"]}}],"response":{"format":"json"}}
-		populationData = getYearByYearDataFrame(populationUrl, requestBodyForPopulationYearByYear)
+		requestBodyForPopulationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":[code]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101N1"]}}],"response":{"format":"json"}}
+		populationData[code] = getYearByYearDataFrame(populationUrl, requestBodyForPopulationYearByYear)
 
 
-	return populationData
+	return populationData[code]
 
-def getDeathsData():
+def getDeathsData(code):
 	global deathsData
 
-	if deathsData == None:
+	if code not in deathsData:
 		deathsUrl = mainUrl + "BE0101I/DodaFodelsearK"
-		requestBodyForDeathsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
-		deathsData = getYearByYearDataFrame(deathsUrl, requestBodyForDeathsYearByYear)
+		requestBodyForDeathsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":[code]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
+		deathsData[code] = getYearByYearDataFrame(deathsUrl, requestBodyForDeathsYearByYear)
 
-	return deathsData
+	return deathsData[code]
 
-def getBirthsData():
+def getBirthsData(code):
 	global birthsData
 
-	if birthsData == None:
+	if code not in birthsData:
 		birthsUrl = mainUrl + "BE0101H/FoddaK"
-		requestBodyForBirthsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"AlderModer","selection":{"filter":"vs:Ålder1årUS","values":["-14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49+","us"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
-		birthsData = getYearByYearDataFrame(birthsUrl, requestBodyForBirthsYearByYear)
+		requestBodyForBirthsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":[code]}},{"code":"AlderModer","selection":{"filter":"vs:Ålder1årUS","values":["-14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49+","us"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}}],"response":{"format":"json"}}
+		birthsData[code] = getYearByYearDataFrame(birthsUrl, requestBodyForBirthsYearByYear)
 
-	return birthsData
+	return birthsData[code]
 
-def getImmigrationData():
+def getImmigrationData(code):
 	global immigrationData
 
-	if immigrationData == None:
+	if code not in immigrationData:
 		immgrationUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForImmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AX"]}}],"response":{"format":"json"}}
-		immigrationData = getYearByYearDataFrame(immgrationUrl, requestBodyForImmigrationYearByYear)
+		requestBodyForImmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AX"]}}],"response":{"format":"json"}}
+		immigrationData[code] = getYearByYearDataFrame(immgrationUrl, requestBodyForImmigrationYearByYear)
 
-	return immigrationData
+	return immigrationData[code]
 
-def getEmigrationData():
+def getEmigrationData(code):
 	global emigrationData
 
-	if emigrationData == None:
+	if code not in emigrationData:
 		emigrationUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForEmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AY"]}}],"response":{"format":"json"}}	
-		emigrationData = getYearByYearDataFrame(emigrationUrl, requestBodyForEmigrationYearByYear)
+		requestBodyForEmigrationYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101AY"]}}],"response":{"format":"json"}}	
+		emigrationData[code] = getYearByYearDataFrame(emigrationUrl, requestBodyForEmigrationYearByYear)
 
-	return emigrationData
+	return emigrationData[code]
 	
-def getMoveinsData():
+def getMoveinsData(code):
 	global moveinsData
 
-	if moveinsData == None:
+	if code not in moveinsData:
 		moveinsUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForMoveinsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A2"]}}],"response":{"format":"json"}}
-		moveinsData = getYearByYearDataFrame(moveinsUrl, requestBodyForMoveinsYearByYear)
+		requestBodyForMoveinsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A2"]}}],"response":{"format":"json"}}
+		moveinsData[code] = getYearByYearDataFrame(moveinsUrl, requestBodyForMoveinsYearByYear)
 
-	return moveinsData
+	return moveinsData[code]
 
-def getMoveoutsData():
+def getMoveoutsData(code):
 	global moveoutsData
 
-	if moveoutsData == None:
+	if code not in moveoutsData:
 		moveoutsUrl = mainUrl + "BE0101J/Flyttningar97"
-		requestBodyForMoveoutsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":["0885"]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A3"]}}],"response":{"format":"json"}}
-		moveoutsData = getYearByYearDataFrame(moveoutsUrl, requestBodyForMoveoutsYearByYear)
+		requestBodyForMoveoutsYearByYear = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Alder","selection":{"filter":"vs:Ålder1årA","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100+"]}},{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BE0101A3"]}}],"response":{"format":"json"}}
+		moveoutsData[code] = getYearByYearDataFrame(moveoutsUrl, requestBodyForMoveoutsYearByYear)
 
-	return moveoutsData
+	return moveoutsData[code]
 
 def calculateScbData(data):
 	malesScb = []
@@ -196,9 +196,9 @@ def getDeathRiskScbData():
 
 	return deathRiskData
 
-def getDeathRiskKommData():
-	populationData = getPopulationData()
-	deathData = getDeathsData()
+def getDeathRiskKommData(code):
+	populationData = getPopulationData(code)
+	deathData = getDeathsData(code)
 	malesPopulation = populationData["dataFrame"]["malesMatrix"]
 	malesDeadPopulation = deathData["dataFrame"]["malesMatrix"]
 	femalesPopulation = populationData["dataFrame"]["femalesMatrix"]
@@ -212,9 +212,9 @@ def getDeathRiskKommData():
 
 	return {"males" : malesKommDeathRisk, "females" : femalesKommDeathRisk}
 
-def getTfrKommData():
-	birthsData = getBirthsData()
-	populationData = getPopulationData()
+def getTfrKommData(code):
+	birthsData = getBirthsData(code)
+	populationData = getPopulationData(code)
 	length = len(birthsData["dataFrame"]["malesMatrix"])
 	femalesPopulation = populationData["dataFrame"]["femalesMatrix"]
 	last = len(femalesPopulation[0]) - 1
@@ -258,24 +258,23 @@ def getTfrSverige():
 	return [0, 0.00965481641509724, 0.0556729215856838, 0.214757530278841, 0.373823020523653, 0.894762501075413, 1.39310397568133, 2.34378793817093, 3.18136716024127, 4.01894638231161, 5.08271596677213, 6.3047863035436, 7.00668189769718, 8.47754060280467, 9.99363355670053, 11.5097456290447, 12.5961132194511, 13.9312882966418, 13.6606284233971, 14.0232671516379, 13.2097962929328, 12.5320281805928, 11.3114682012407, 9.61592949116249, 7.7846880347191, 5.81776295035895, 4.57460496506103, 3.48970949517737, 2.29174752177113, 1.04858953647321, 0.732714532888509, 0.507288908432193]
 
 
-def getPopulationByGenderDataframe():
-	return getPerYearTotalDataFrame(getPopulationData(), False)
+def getPopulationByGenderDataframe(code):
+	return getPerYearTotalDataFrame(getPopulationData(code), False)
 	
+def getBirthsByGenderDataFrame(code):
+	return getPerYearTotalDataFrame(getBirthsData(code), False)
 
-def getBirthsByGenderDataFrame():
-	return getPerYearTotalDataFrame(getBirthsData(), False)
+def getDeathsByGenderDataFrame(code):
+	return getPerYearTotalDataFrame(getDeathsData(code), True)
 
-def getDeathsByGenderDataFrame():
-	return getPerYearTotalDataFrame(getDeathsData(), True)
+def getImmigrationByGenderDataFrame(code):
+	return getPerYearTotalDataFrame(getImmigrationData(code), False)
 
-def getImmigrationByGenderDataFrame():
-	return getPerYearTotalDataFrame(getImmigrationData(), False)
+def getEmigrationByGenderDataFrame(code):
+	return getPerYearTotalDataFrame(getEmigrationData(code), True)
 
-def getEmigrationByGenderDataFrame():
-	return getPerYearTotalDataFrame(getEmigrationData(), True)
+def getMoveinsByGenderDataFrame(code):
+	return getPerYearTotalDataFrame(getMoveinsData(code), False)
 
-def getMoveinsByGenderDataFrame():
-	return getPerYearTotalDataFrame(getMoveinsData(), False)
-
-def getMoveoutsByGenderDataFrame():
-	return getPerYearTotalDataFrame(getMoveoutsData(), True)
+def getMoveoutsByGenderDataFrame(code):
+	return getPerYearTotalDataFrame(getMoveoutsData(code), True)
