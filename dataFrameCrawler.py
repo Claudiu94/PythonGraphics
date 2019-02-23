@@ -2,7 +2,9 @@
 import simplejson as simplejson
 import requests as request
 import numpy as numpy
+import time as time
 import pandas as pd
+import sys as sys
 
 headers = {"Content-type": "application/json"}
 mainUrl = "http://api.scb.se/OV0104/v1/doris/en/ssd/START/BE/BE0101/"
@@ -14,18 +16,35 @@ emigrationData = {}
 moveinsData = {}
 moveoutsData = {}
 deathRiskData = None
+birthsShare = None
 kommData = None
 scbData = None
+exception = False
 
 def getYearByYearDataFrame(statsUrl, jsonBody):
+	global exception
 	matrixMales = []
 	matrixFemales = []
 	years = []	
 	lineM = []
 	lineF = []
 	
-	response = request.post(url = statsUrl, json = jsonBody, headers = headers);
-	json_data = simplejson.loads(response.text)["data"]
+	try:
+		response = request.post(url = statsUrl, json = jsonBody, headers = headers);
+		json_data = simplejson.loads(response.text)["data"]
+	except:
+		if exception:
+			print("Second try. Raise an exption and continue...")
+			exception = False
+			
+			raise ValueError('No value for this code', jsonBody["query"][0]["selection"]["values"][0])
+		else:
+			print("Unexpected error:", sys.exc_info()[0])
+			print("First try, wait 10 seconds and try again...")
+			exception = True
+			time.sleep(10)
+			getYearByYearDataFrame(statsUrl, jsonBody)
+
 	firstIndex = json_data[0]["key"][1]
 	lastIndexM = firstIndex
 	lastIndexF = firstIndex
@@ -52,8 +71,9 @@ def getYearByYearDataFrame(statsUrl, jsonBody):
 	matrixMales.append(lineM)
 	matrixFemales.append(lineF)
 	dataFrame = pd.DataFrame(data = {"malesMatrix": matrixMales, "femalesMatrix": matrixFemales})
-
 	allData = {"years" : years, "dataFrame" : dataFrame}
+	exception = False
+
 	return allData
 
 def getPerYearTotalDataFrame(allData, negativeValues):
@@ -231,28 +251,33 @@ def getTfrKommData(code):
 	return {"avgTfrKomm" : avgTfrKomm, "tfrKomm2017" : tfrKomm2017, "tfrKomm2012_2017" : tfrKomm2012_2017}
 
 def getBirthShares():
-	totalBirthsUrl = mainUrl + "/BE0101H/FoddaK"
-	requestTotalBirths = {"query":[{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"Tid","selection":{"filter":"item","values":["2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017"]}}],"response":{"format":"json"}}
-	males = []
-	females = []
-	maleShares = []
-	femaleShares = []
-	response = request.post(url = totalBirthsUrl, json = requestTotalBirths, headers = headers);
-	json_data = simplejson.loads(response.text)["data"]
-	
-	for val in json_data:
-		# male
-		if val["key"][0] == "1":
-			males.append(int(val["values"][0]))
-		else:
-			females.append(int(val["values"][0]))
+	global birthsShare
 
-	for i in range(0, len(males)):
-		total = males[i] + females[i]
-		maleShares.append(males[i] / total)
-		femaleShares.append(females[i] / total)
+	if birthsShare == None:
+		totalBirthsUrl = mainUrl + "/BE0101H/FoddaK"
+		requestTotalBirths = {"query":[{"code":"Kon","selection":{"filter":"item","values":["1","2"]}},{"code":"Tid","selection":{"filter":"item","values":["2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017"]}}],"response":{"format":"json"}}
+		males = []
+		females = []
+		maleShares = []
+		femaleShares = []
+		response = request.post(url = totalBirthsUrl, json = requestTotalBirths, headers = headers);
+		json_data = simplejson.loads(response.text)["data"]
+		
+		for val in json_data:
+			# male
+			if val["key"][0] == "1":
+				males.append(int(val["values"][0]))
+			else:
+				females.append(int(val["values"][0]))
+
+		for i in range(0, len(males)):
+			total = males[i] + females[i]
+			maleShares.append(males[i] / total)
+			femaleShares.append(females[i] / total)
 	
-	return {"boyShare" : sum(maleShares) / len(maleShares), "girlShare" : sum(femaleShares) / len(femaleShares)}
+		birthsShare = {"boyShare" : sum(maleShares) / len(maleShares), "girlShare" : sum(femaleShares) / len(femaleShares)}
+
+	return birthsShare
 
 def getTfrSverige():
 	return [0, 0.00965481641509724, 0.0556729215856838, 0.214757530278841, 0.373823020523653, 0.894762501075413, 1.39310397568133, 2.34378793817093, 3.18136716024127, 4.01894638231161, 5.08271596677213, 6.3047863035436, 7.00668189769718, 8.47754060280467, 9.99363355670053, 11.5097456290447, 12.5961132194511, 13.9312882966418, 13.6606284233971, 14.0232671516379, 13.2097962929328, 12.5320281805928, 11.3114682012407, 9.61592949116249, 7.7846880347191, 5.81776295035895, 4.57460496506103, 3.48970949517737, 2.29174752177113, 1.04858953647321, 0.732714532888509, 0.507288908432193]

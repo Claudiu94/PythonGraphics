@@ -3,17 +3,29 @@ from plotly.offline import download_plotlyjs, plot
 import dataFrameCrawler as dataFrameService
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
+from termcolor import colored
+from progress.bar import Bar
 import numpy as numpy
 import os as os
 
 populationBirthsDeathsPredictionsCache = {}
 includePlotlyInHtml = False
+auto_open = False
+bar = None
 regionCodes = ["0114","0115","0117","0120","0123","0125","0126","0127","0128","0136","0138","0139","0140","0160","0162","0163","0180","0181","0182","0183","0184","0186","0187","0188","0191","0192","03","0305","0319","0330","0331","0360","0380","0381","0382","04","0428","0461","0480","0481","0482","0483","0484","0486","0488","05","0509","0512","0513","0560","0561","0562","0563","0580","0581","0582","0583","0584","0586","06","0604","0617","0642","0643","0662","0665","0680","0682","0683","0684","0685","0686","0687","07","0760","0761","0763","0764","0765","0767","0780","0781","08","0821","0834","0840","0860","0861","0862","0880","0881","0882","0883","0884","0885","09","0980","10","1060","1080","1081","1082","1083","12","1214","1230","1231","1233","1256","1257","1260","1261","1262","1263","1264","1265","1266","1267","1270","1272","1273","1275","1276","1277","1278","1280","1281","1282","1283","1284","1285","1286","1287","1290","1291","1292","1293","13","1315","1380","1381","1382","1383","1384","14","1401","1402","1407","1415","1419","1421","1427","1430","1435","1438","1439","1440","1441","1442","1443","1444","1445","1446","1447","1452","1460","1461","1462","1463","1465","1466","1470","1471","1472","1473","1480","1481","1482","1484","1485","1486","1487","1488","1489","1490","1491","1492","1493","1494","1495","1496","1497","1498","1499","17","1715","1730","1737","1760","1761","1762","1763","1764","1765","1766","1780","1781","1782","1783","1784","1785","18","1814","1860","1861","1862","1863","1864","1880","1881","1882","1883","1884","1885","19","1904","1907","1960","1961","1962","1980","1981","1982","1983","1984","20","2021","2023","2026","2029","2031","2034","2039","2061","2062","2080","2081","2082","2083","2084","2085","21","2101","2104","2121","2132","2161","2180","2181","2182","2183","2184","22","2260","2262","2280","2281","2282","2283","2284","23","2303","2305","2309","2313","2321","2326","2361","2380","24","2401","2403","2404","2409","2417","2418","2421","2422","2425","2460","2462","2463","2480","2481","2482","25","2505","2506","2510","2513","2514","2518","2521","2523","2560","2580","2581","2582","2583","2584"]
 regionCodeValues = ["Upplands Väsby","Vallentuna","Österåker","Värmdö","Järfälla","Ekerö","Huddinge","Botkyrka","Salem","Haninge","Tyresö","Upplands-Bro","Nykvarn","Täby","Danderyd","Sollentuna","Stockholm","Södertälje","Nacka","Sundbyberg","Solna","Lidingö","Vaxholm","Norrtälje","Sigtuna","Nynäshamn","Uppsala län","Håbo","Älvkarleby","Knivsta","Heby","Tierp","Uppsala","Enköping","Östhammar","Södermanlands län","Vingåker","Gnesta","Nyköping","Oxelösund","Flen","Katrineholm","Eskilstuna","Strängnäs","Trosa","Östergötlands län","Ödeshög","Ydre","Kinda","Boxholm","Åtvidaberg","Finspång","Valdemarsvik","Linköping","Norrköping","Söderköping","Motala","Vadstena","Mjölby","Jönköpings län","Aneby","Gnosjö","Mullsjö","Habo","Gislaved","Vaggeryd","Jönköping","Nässjö","Värnamo","Sävsjö","Vetlanda","Eksjö","Tranås","Kronobergs län","Uppvidinge","Lessebo","Tingsryd","Alvesta","Älmhult","Markaryd","Växjö","Ljungby","Kalmar län","Högsby","Torsås","Mörbylånga","Hultsfred","Mönsterås","Emmaboda","Kalmar","Nybro","Oskarshamn","Västervik","Vimmerby","Borgholm","Gotlands län","Gotland","Blekinge län","Olofström","Karlskrona","Ronneby","Karlshamn","Sölvesborg","Skåne län","Svalöv","Staffanstorp","Burlöv","Vellinge","Östra Göinge","Örkelljunga","Bjuv","Kävlinge","Lomma","Svedala","Skurup","Sjöbo","Hörby","Höör","Tomelilla","Bromölla","Osby","Perstorp","Klippan","Åstorp","Båstad","Malmö","Lund","Landskrona","Helsingborg","Höganäs","Eslöv","Ystad","Trelleborg","Kristianstad","Simrishamn","Ängelholm","Hässleholm","Hallands län","Hylte","Halmstad","Laholm","Falkenberg","Varberg","Kungsbacka","Västra Götalands län","Härryda","Partille","Öckerö","Stenungsund","Tjörn","Orust","Sotenäs","Munkedal","Tanum","Dals-Ed","Färgelanda","Ale","Lerum","Vårgårda","Bollebygd","Grästorp","Essunga","Karlsborg","Gullspång","Tranemo","Bengtsfors","Mellerud","Lilla Edet","Mark","Svenljunga","Herrljunga","Vara","Götene","Tibro","Töreboda","Göteborg","Mölndal","Kungälv","Lysekil","Uddevalla","Strömstad","Vänersborg","Trollhättan","Alingsås","Borås","Ulricehamn","Åmål","Mariestad","Lidköping","Skara","Skövde","Hjo","Tidaholm","Falköping","Värmlands län","Kil","Eda","Torsby","Storfors","Hammarö","Munkfors","Forshaga","Grums","Årjäng","Sunne","Karlstad","Kristinehamn","Filipstad","Hagfors","Arvika","Säffle","Örebro län","Lekeberg","Laxå","Hallsberg","Degerfors","Hällefors","Ljusnarsberg","Örebro","Kumla","Askersund","Karlskoga","Nora","Lindesberg","Västmanlands län","Skinnskatteberg","Surahammar","Kungsör","Hallstahammar","Norberg","Västerås","Sala","Fagersta","Köping","Arboga","Dalarnas län","Vansbro","Malung-Sälen","Gagnef","Leksand","Rättvik","Orsa","Älvdalen","Smedjebacken","Mora","Falun","Borlänge","Säter","Hedemora","Avesta","Ludvika","Gävleborgs län","Ockelbo","Hofors","Ovanåker","Nordanstig","Ljusdal","Gävle","Sandviken","Söderhamn","Bollnäs","Hudiksvall","Västernorrlands län","Ånge","Timrå","Härnösand","Sundsvall","Kramfors","Sollefteå","Örnsköldsvik","Jämtlands län","Ragunda","Bräcke","Krokom","Strömsund","Åre","Berg","Härjedalen","Östersund","Västerbottens län","Nordmaling","Bjurholm","Vindeln","Robertsfors","Norsjö","Malå","Storuman","Sorsele","Dorotea","Vännäs","Vilhelmina","Åsele","Umeå","Lycksele","Skellefteå","Norrbottens län","Arvidsjaur","Arjeplog","Jokkmokk","Överkalix","Kalix","Övertorneå","Pajala","Gällivare","Älvsbyn","Luleå","Piteå","Boden","Haparanda","Kiruna"]
 
 def setPlotlyInclusion(value):
 	global includePlotlyInHtml
 	includePlotlyInHtml = value
+
+def initBar(value):
+	global bar
+	bar = Bar('Processing', max=value)
+
+def setAutoOpen(value):
+	global auto_open
+	auto_open = value
 
 def createDirectories():
 	dirs = ["population", "births", "deaths", "immigration", "emigration", "moveins", "moveouts"]
@@ -199,37 +211,55 @@ def plotRisk(data, fileName, figTitle, codeIndex):
 	trace0 = go.Scatter(y = data["scb"], name = 'SCB data', line = dict(color = 'blue'))
 	trace1 = go.Scatter(y = data["komm"], name = 'Kommun medel', line = dict(color = 'red'))
 	layout = go.Layout(title = figTitle)
-	plot(go.Figure(data = [trace0, trace1], layout = layout), filename = fileName + regionCodeValues[codeIndex] + ".html")
+	plot(go.Figure(data = [trace0, trace1], layout = layout), filename = fileName + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 
 def plotMaleRisk(startIndex, endIndex):
 	dataScb = dataFrameService.getDeathRiskScbData()
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		dataKomm = dataFrameService.getDeathRiskKommData(regionCodes[codeIndex])
-		data = {"scb" : dataScb["males"], "komm" : dataKomm["males"]}
-		plotRisk(data, "deaths/deathRiskMales_", "Males death risk", codeIndex)
+		try:
+			dataKomm = dataFrameService.getDeathRiskKommData(regionCodes[codeIndex])
+			data = {"scb" : dataScb["males"], "komm" : dataKomm["males"]}
+			plotRisk(data, "deaths/deathRiskMales_", "Males death risk", codeIndex)
+		except ValueError as err:
+			print(colored("[Male death risk graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotFemaleRisk(startIndex, endIndex):
 	dataScb = dataFrameService.getDeathRiskScbData()
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		dataKomm = dataFrameService.getDeathRiskKommData(regionCodes[codeIndex])
-		data = {"scb" : dataScb["females"], "komm" : dataKomm["females"]}
-		plotRisk(data, "deaths/deathRiskFemales_", "Females death risk", codeIndex)
+		try:
+			dataKomm = dataFrameService.getDeathRiskKommData(regionCodes[codeIndex])
+			data = {"scb" : dataScb["females"], "komm" : dataKomm["females"]}
+			plotRisk(data, "deaths/deathRiskFemales_", "Females death risk", codeIndex)
+		except ValueError as err:
+			print(colored("[Female death risk graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotFertilityGraph(startIndex, endIndex):
 	tfrSverige = dataFrameService.getTfrSverige()
 	x = numpy.arange(14, 46, 1)
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		tfrKommData = dataFrameService.getTfrKommData(regionCodes[codeIndex])
-		trace0 = go.Scatter(y = tfrSverige, x = x, name = 'TFR Sverige', line = dict(color = 'blue'))
-		trace1 = go.Scatter(y = tfrKommData["avgTfrKomm"], x = x, name = 'Average TFR Kommunen', line = dict(color = 'red'))
-		trace2 = go.Scatter(y = tfrKommData["tfrKomm2017"], x = x, name = 'TFR Kommunen 2017', line = dict(color = 'yellow'))
-		trace3 = go.Scatter(y = tfrKommData["tfrKomm2012_2017"], x = x, name = 'TFR Kommunen 2012-2017', line = dict(color = 'green'))
-		layout = go.Layout(title = "Total fertility rate", xaxis = dict(title = "Age"), yaxis = dict(title = "Percentage"))
+		try:
+			tfrKommData = dataFrameService.getTfrKommData(regionCodes[codeIndex])
+			trace0 = go.Scatter(y = tfrSverige, x = x, name = 'TFR Sverige', line = dict(color = 'blue'))
+			trace1 = go.Scatter(y = tfrKommData["avgTfrKomm"], x = x, name = 'Average TFR Kommunen', line = dict(color = 'red'))
+			trace2 = go.Scatter(y = tfrKommData["tfrKomm2017"], x = x, name = 'TFR Kommunen 2017', line = dict(color = 'yellow'))
+			trace3 = go.Scatter(y = tfrKommData["tfrKomm2012_2017"], x = x, name = 'TFR Kommunen 2012-2017', line = dict(color = 'green'))
+			layout = go.Layout(title = "Total fertility rate", xaxis = dict(title = "Age"), yaxis = dict(title = "Percentage"))
 
-		plot(go.Figure(data = [trace0, trace1, trace2, trace3], layout = layout), filename = "births/fertilityGraph_" + regionCodes[codeIndex] + ".html", include_plotlyjs=includePlotlyInHtml)
+			plot(go.Figure(data = [trace0, trace1, trace2, trace3], layout = layout), filename = "births/fertilityGraph_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
+		except ValueError as err:
+			print(colored("[Fertility graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotDataFrameGraph(df, predictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex):
 	trace0 = go.Scatter(x = df['year'], y = df['male'], name = 'males', line = dict(color = 'blue'))
@@ -245,81 +275,122 @@ def plotDataFrameGraph(df, predictions, fileName, figTitle, xAxisTitle, yAxisTit
 		data = [trace0, trace1, trace2, trace3]
 	else:
 		data = [trace0, trace1]
-	plot(go.Figure(data = data, layout = layout), filename = fileName + regionCodeValues[codeIndex] + ".html", include_plotlyjs=includePlotlyInHtml)
+	plot(go.Figure(data = data, layout = layout), filename = fileName + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 
 def plotPopulationByGenderGraph(startIndex, endIndex):
 	fileName = "population/populationByGender_";
 	figTitle = "Total population by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Population"
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		predictions = getPopulation_Births_Deaths_Predictions(codeIndex)
-		populationPredictions = {"malePrediction" : predictions["male"]["populationPredictions"], "femalePrediction" : predictions["female"]["populationPredictions"]}
-		plotDataFrameGraph(dataFrameService.getPopulationByGenderDataframe(regionCodes[codeIndex]), populationPredictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
-
+		try:
+			predictions = getPopulation_Births_Deaths_Predictions(codeIndex)
+			populationPredictions = {"malePrediction" : predictions["male"]["populationPredictions"], "femalePrediction" : predictions["female"]["populationPredictions"]}
+			plotDataFrameGraph(dataFrameService.getPopulationByGenderDataframe(regionCodes[codeIndex]), populationPredictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Population graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotBirthsByGenderGraph(startIndex, endIndex):
 	fileName = "births/birthsByGender_";
 	figTitle = "Births by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Births"
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		predictions = getPopulation_Births_Deaths_Predictions(codeIndex)
-		birthsPredictions = {"malePrediction" : predictions["male"]["birthsPredictions"], "femalePrediction" : predictions["female"]["birthsPredictions"]}
-		plotDataFrameGraph(dataFrameService.getBirthsByGenderDataFrame(regionCodes[codeIndex]), birthsPredictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		try:
+			predictions = getPopulation_Births_Deaths_Predictions(codeIndex)
+			birthsPredictions = {"malePrediction" : predictions["male"]["birthsPredictions"], "femalePrediction" : predictions["female"]["birthsPredictions"]}
+			plotDataFrameGraph(dataFrameService.getBirthsByGenderDataFrame(regionCodes[codeIndex]), birthsPredictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Births graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotDeathsByGenderGraph(startIndex, endIndex):
 	fileName = "deaths/deathsByGender_";
 	figTitle = "Deaths by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Deaths"
-	
+	initBar(endIndex - startIndex)
+
 	for codeIndex in range(startIndex, endIndex):
-		predictions = getPopulation_Births_Deaths_Predictions(codeIndex)
-		deathsPredictions = {"malePrediction" : predictions["male"]["deathsPredictions"], "femalePrediction" : predictions["female"]["deathsPredictions"]}
-		plotDataFrameGraph(dataFrameService.getDeathsByGenderDataFrame(regionCodes[codeIndex]), deathsPredictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		try:
+			predictions = getPopulation_Births_Deaths_Predictions(codeIndex)
+			deathsPredictions = {"malePrediction" : predictions["male"]["deathsPredictions"], "femalePrediction" : predictions["female"]["deathsPredictions"]}
+			plotDataFrameGraph(dataFrameService.getDeathsByGenderDataFrame(regionCodes[codeIndex]), deathsPredictions, fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Deaths graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotImmigrationByGenderGraph(startIndex, endIndex):
 	fileName = "immigration/immigrationByGender_";
 	figTitle = "Immigration by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		immigrationDataFrame = dataFrameService.getImmigrationByGenderDataFrame(regionCodes[codeIndex])
-		plotDataFrameGraph(immigrationDataFrame, calculatePredictions(immigrationDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		try:
+			immigrationDataFrame = dataFrameService.getImmigrationByGenderDataFrame(regionCodes[codeIndex])
+			plotDataFrameGraph(immigrationDataFrame, calculatePredictions(immigrationDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Immigration graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotEmigrationByGenderGraph(startIndex, endIndex):
 	fileName = "emigration/emigrationByGender_";
 	figTitle = "Emigration by gender";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		emigrationDataFrame = dataFrameService.getEmigrationByGenderDataFrame(regionCodes[codeIndex])
-		plotDataFrameGraph(emigrationDataFrame, calculatePredictions(emigrationDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		try:
+			emigrationDataFrame = dataFrameService.getEmigrationByGenderDataFrame(regionCodes[codeIndex])
+			plotDataFrameGraph(emigrationDataFrame, calculatePredictions(emigrationDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Emigration graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotMoveinsByGenderGraph(startIndex, endIndex):
 	fileName = "moveins/moveinsByGender_";
 	figTitle = "Moveins within country";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		moveinsDataFrame = dataFrameService.getMoveinsByGenderDataFrame(regionCodes[codeIndex])
-		plotDataFrameGraph(moveinsDataFrame, calculatePredictions(moveinsDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		try:
+			moveinsDataFrame = dataFrameService.getMoveinsByGenderDataFrame(regionCodes[codeIndex])
+			plotDataFrameGraph(moveinsDataFrame, calculatePredictions(moveinsDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Moveins graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotMoveoutsByGenderGraph(startIndex, endIndex):
 	fileName = "moveouts/moveoutsByGender_";
 	figTitle = "Moveouts within country";
 	xAxisTitle = "Year"
 	yAxisTitle = "Persons"
+	initBar(endIndex - startIndex)
 
 	for codeIndex in range(startIndex, endIndex):
-		moveoutsDataFrame = dataFrameService.getMoveoutsByGenderDataFrame(regionCodes[codeIndex]) 
-		plotDataFrameGraph(moveoutsDataFrame, calculatePredictions(moveoutsDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		try:
+			moveoutsDataFrame = dataFrameService.getMoveoutsByGenderDataFrame(regionCodes[codeIndex]) 
+			plotDataFrameGraph(moveoutsDataFrame, calculatePredictions(moveoutsDataFrame), fileName, figTitle, xAxisTitle, yAxisTitle, codeIndex)
+		except ValueError as err:
+			print(colored("[Moveouts graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotPopulationHeatMap(withNumbers, x, z, title, fileName):	
 	xAxisTitle = "Year"
@@ -331,23 +402,35 @@ def plotPopulationHeatMap(withNumbers, x, z, title, fileName):
 		fig.layout.xaxis.side = 'bottom'
 		fig.layout.xaxis.title = xAxisTitle
 		fig.layout.yaxis.title = yAxisTitle
-		plot(fig, filename=fileName, include_plotlyjs=includePlotlyInHtml)
+		plot(fig, filename=fileName, include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 	else:
 		trace = go.Heatmap(x = x, z = z)
 		layout = go.Layout(title = title,  xaxis = dict(title = xAxisTitle), yaxis = dict(title = yAxisTitle))
-		fig = go.Figure(data=[trace], layout=layout)
-		plot(fig, filename=fileName, include_plotlyjs=includePlotlyInHtml)
+		fig = go.Figure(data = [trace], layout=layout)
+		plot(fig, filename = fileName, include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 
 def plotMalePopulationHeatmap(withNumbers, startIndex, endIndex):
+	initBar(endIndex - startIndex)
 	for codeIndex in range(startIndex, endIndex):
-		dataFrame = dataFrameService.getPopulationData(regionCodes[codeIndex])
-		plotPopulationHeatMap(withNumbers, dataFrame["years"], dataFrame["dataFrame"]["malesMatrix"], "Male population heatmap", "population/malesHeatmap_" + regionCodeValues[codeIndex] + ".html")
+		try:
+			dataFrame = dataFrameService.getPopulationData(regionCodes[codeIndex])
+			plotPopulationHeatMap(withNumbers, dataFrame["years"], dataFrame["dataFrame"]["malesMatrix"], "Male population heatmap", "population/malesHeatmap_" + regionCodeValues[codeIndex] + ".html")
+		except ValueError as err:
+			print(colored("[Male heatmap graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+		bar.next()
+	bar.finish()
 
 def plotFemalePopulationHeatmap(withNumbers, startIndex, endIndex):
+	initBar(endIndex - startIndex)
 	for codeIndex in range(startIndex, endIndex):
-		dataFrame = dataFrameService.getPopulationData(regionCodes[codeIndex])
-		plotPopulationHeatMap(withNumbers, dataFrame["years"], dataFrame["dataFrame"]["femalesMatrix"], "Female population heatmap", "population/femalesHeatmap_" + regionCodeValues[codeIndex] + ".html")
-
+		try:
+			dataFrame = dataFrameService.getPopulationData(regionCodes[codeIndex])
+			plotPopulationHeatMap(withNumbers, dataFrame["years"], dataFrame["dataFrame"]["femalesMatrix"], "Female population heatmap", "population/femalesHeatmap_" + regionCodeValues[codeIndex] + ".html")
+		except ValueError as err:
+			print(colored("[Female heatmap graph]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])			
+		bar.next()
+	bar.finish()
+	
 if __name__ == "__main__":
 	createDirectories()
 	maxIndex = len(regionCodes) - 1
@@ -356,6 +439,10 @@ if __name__ == "__main__":
 	cmd = input("Include plotlyjs(Y or N, default: N)?: ")
 	if cmd == 'Y':
 		setPlotlyInclusion(True)
+
+	cmd = input("Open each file after creation(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setAutoOpen(True)
 
 	index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
 	index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
@@ -392,7 +479,7 @@ if __name__ == "__main__":
 	print(initial_text)
 
 	while True:
-		cmd = input("Enter a number to select graph, or q to exit: ")
+		cmd = input("\nEnter a number to select graph, or q to exit: ")
 		if cmd == '1':
 			plotPopulationByGenderGraph(startIndex, endIndex)
 		elif cmd == '2':
