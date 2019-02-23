@@ -34,12 +34,12 @@ def getYearByYearDataFrame(statsUrl, jsonBody):
 		json_data = simplejson.loads(response.text)["data"]
 	except:
 		if exception:
-			print("Second try. Raise an exption and continue...")
+			print("Second try. Raise an exception and continue...")
 			exception = False
 			
 			raise ValueError('No value for this code', jsonBody["query"][0]["selection"]["values"][0])
 		else:
-			print("Unexpected error:", sys.exc_info()[0])
+			print("\nUnexpected error:", sys.exc_info()[0])
 			print("First try, wait 10 seconds and try again...")
 			exception = True
 			time.sleep(10)
