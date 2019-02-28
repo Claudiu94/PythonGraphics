@@ -227,8 +227,15 @@ def getDeathRiskKommData(code):
 	femalesKommDeathRisk = []
 	
 	for i in range(len(malesPopulation)):
-		femalesKommDeathRisk.append(100 * (sum(femalesDeadPopulation[i]) / sum(femalesPopulation[i])))
-		malesKommDeathRisk.append(100 * (sum(malesDeadPopulation[i]) / sum(malesPopulation[i])))
+		sumF = sum(femalesPopulation[i])
+		sumM = sum(malesPopulation[i])
+		if sumF == 0:
+			sumF = 1
+		if sumM == 0:
+			sumM = 1
+
+		femalesKommDeathRisk.append(100 * (sum(femalesDeadPopulation[i]) / sumF))
+		malesKommDeathRisk.append(100 * (sum(malesDeadPopulation[i]) / sumM))
 
 	return {"males" : malesKommDeathRisk, "females" : femalesKommDeathRisk}
 
