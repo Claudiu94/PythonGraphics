@@ -286,6 +286,45 @@ def getBirthShares():
 
 	return birthsShare
 
+def getNumberOfAppartmentsData():
+	housesDataUrl = "http://api.scb.se/OV0104/v1/doris/en/ssd/START/BO/BO0104/BO0104T02"
+	jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Byggnadsperiod","selection":{"filter":"item","values":["UPPG. SAKNAS","-1930","1931-1940","1941-1950","1951-1960","1961-1970","1971-1980","1981-1990","1991-2000","2001-2010","2011-"]}},{"code":"Tid","selection":{"filter":"item","values":["2017"]}}],"response":{"format":"json"}}
+	housesData = {}
+	housesData["keys"] = []
+	lastKey = None
+
+	try:
+		response = request.post(url = housesDataUrl, json = jsonBody, headers = headers);
+		json_data = simplejson.loads(response.text)["data"]
+
+		for val in json_data:
+			if val["key"][1] != lastKey:
+				lastKey = val["key"][1]
+				housesData[lastKey] = []
+			if val["key"][2] == "UPPG. SAKNAS":
+				housesData[lastKey].insert(0, (int)(val["values"][0]))
+			else:
+				housesData[lastKey].append((int)(val["values"][0]))
+			
+			if val["key"][2] not in housesData["keys"]:
+				housesData["keys"].append(val["key"][2])
+
+		housesData["keys"].insert(0, housesData["keys"].pop())
+
+		return pd.DataFrame.from_dict(housesData)
+	except:
+		if exception:
+			print("Second try. Raise an exception and continue...")
+			exception = False
+			
+			raise ValueError('No value for this code......')
+		else:
+			print("\nUnexpected error:", sys.exc_info()[0])
+			print("First try, wait 10 seconds and try again...")
+			exception = True
+			time.sleep(10)
+			getNumberOfAppartmentsData()
+
 def getTfrSverige():
 	return [0, 0.00965481641509724, 0.0556729215856838, 0.214757530278841, 0.373823020523653, 0.894762501075413, 1.39310397568133, 2.34378793817093, 3.18136716024127, 4.01894638231161, 5.08271596677213, 6.3047863035436, 7.00668189769718, 8.47754060280467, 9.99363355670053, 11.5097456290447, 12.5961132194511, 13.9312882966418, 13.6606284233971, 14.0232671516379, 13.2097962929328, 12.5320281805928, 11.3114682012407, 9.61592949116249, 7.7846880347191, 5.81776295035895, 4.57460496506103, 3.48970949517737, 2.29174752177113, 1.04858953647321, 0.732714532888509, 0.507288908432193]
 

@@ -5,8 +5,8 @@ import plotly.figure_factory as ff
 import plotly.graph_objs as go
 from termcolor import colored
 from progress.bar import Bar
+import graphsHelper as gh
 import numpy as numpy
-import os as os
 
 populationBirthsDeathsPredictionsCache = {}
 includePlotlyInHtml = False
@@ -26,13 +26,6 @@ def initBar(value):
 def setAutoOpen(value):
 	global auto_open
 	auto_open = value
-
-def createDirectories():
-	dirs = ["population", "births", "deaths", "immigration", "emigration", "moveins", "moveouts"]
-
-	for d in dirs:
-		if not os.path.exists(d):
-			os.makedirs(d)
 
 def calculatePredictions(dataFrame):
 	maleData = list(dataFrame["male"])
@@ -432,7 +425,7 @@ def plotFemalePopulationHeatmap(withNumbers, startIndex, endIndex):
 	bar.finish()
 	
 if __name__ == "__main__":
-	createDirectories()
+	gh.createDirectories(["population", "births", "deaths", "immigration", "emigration", "moveins", "moveouts"])
 	maxIndex = len(regionCodes) - 1
 	startIndex = 0
 	endIndex = maxIndex
