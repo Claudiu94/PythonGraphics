@@ -63,7 +63,6 @@ def plotLineHosesData(startIndex, endIndex):
 			print(colored("[Bestånd idag ackumulerat efer byggnadsår]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
 def plotPieChartHousesData(startIndex, endIndex):
-
 	for codeIndex in range(startIndex, endIndex):
 		try:
 			dataFrame = dataFrameService.getNumberOfAppartmentsData(regionCodes[codeIndex])["dataFrame"]
@@ -80,7 +79,14 @@ def plotPieChartHousesData(startIndex, endIndex):
 			print(colored("[Fördelning av lågenheter]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
 def plotHolidayHosesPerYear(startIndex, endIndex):
-	print(dataFrameService.getNumberOfHolidaysByRegion("0885"))
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getNumberOfHolidaysByRegion(regionCodes[codeIndex])
+			data = [go.Scatter(y = dataFrame["data"], x = dataFrame["years"], line = dict(color = 'blue'))]
+			layout = go.Layout(title = "Antal fritidshus mot År", xaxis = dict(title = "År"), yaxis = dict(title = "Antal fritidshus", range=[min(dataFrame["data"]), max(dataFrame["data"])]))
+			plot(go.Figure(data = data, layout = layout), filename = "houses/antal_fritidshus_År_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+				print(colored("[Antal fritidshus mot År]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
 if __name__ == "__main__":
 	gh.createDirectories(["houses"])
@@ -88,48 +94,50 @@ if __name__ == "__main__":
 	maxIndex = len(regionCodes) - 1
 	startIndex = 0
 	endIndex = maxIndex
-	# cmd = input("Include plotlyjs(Y or N, default: N)?: ")
-	# if cmd == 'Y':
-	# 	setPlotlyInclusion(True)
+	cmd = input("Include plotlyjs(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setPlotlyInclusion(True)
 
-	# cmd = input("Open each file after creation(Y or N, default: N)?: ")
-	# if cmd == 'Y':
-	# 	setAutoOpen(True)
+	cmd = input("Open each file after creation(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setAutoOpen(True)
 
-	# index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
-	# index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
+	index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
+	index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
 	
-	# if index1:
-	# 	startIndex = int(index1)
+	if index1:
+		startIndex = int(index1)
 
-	# if index2:
-	# 	endIndex = int(index2)
+	if index2:
+		endIndex = int(index2)
 
-	# if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
-	# 	print("Wrong indexes")
-	# 	exit()
+	if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
+		print("Wrong indexes")
+		exit()
 
-	# print("Start index: ", startIndex)
-	# print("End index: ", endIndex)
+	print("Start index: ", startIndex)
+	print("End index: ", endIndex)
 
-	# initial_text = """
-	# 1. Fördelning över byggår för bestånd per 2017
-	# 2. Bestånd idag ackumulerat efer byggnadsår
-	# 3. Fördelning av lågenheter
-	# """
+	initial_text = """
+	1. Fördelning över byggår för bestånd per 2017
+	2. Bestånd idag ackumulerat efer byggnadsår
+	3. Fördelning av lågenheter
+	4. Antal fritidshus mot År
+	"""
 
-	# print(initial_text)
+	print(initial_text)
 
-	# while True:
-	# 	cmd = input("\nEnter a number to select graph, or q to exit: ")
-	# 	if cmd == '1':
-	# 		plotBarHousesData(startIndex, endIndex)
-	# 	elif cmd == '2':
-	# 		plotLineHosesData(startIndex, endIndex)
-	# 	elif cmd == '3':
-	# 		plotPieChartHousesData(startIndex, endIndex)
-	# 	elif cmd == 'q':
-	# 		break
-	# 	else:
-	# 		print("Invalid command.")
-	plotHolidayHosesPerYear(0, 1)
+	while True:
+		cmd = input("\nEnter a number to select graph, or q to exit: ")
+		if cmd == '1':
+			plotBarHousesData(startIndex, endIndex)
+		elif cmd == '2':
+			plotLineHosesData(startIndex, endIndex)
+		elif cmd == '3':
+			plotPieChartHousesData(startIndex, endIndex)
+		elif cmd == '4':
+			plotHolidayHosesPerYear(startIndex, endIndex)
+		elif cmd == 'q':
+			break
+		else:
+			print("Invalid command.")
