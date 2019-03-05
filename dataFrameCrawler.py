@@ -306,7 +306,6 @@ def getNumberOfAppartmentsData(code):
 
 	if code not in housesData:
 		housesDataUrl = mainUrl + "BO/BO0104/BO0104T02"
-		print(housesDataUrl)
 		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":[code]}},{"code":"Byggnadsperiod","selection":{"filter":"item","values":["UPPG. SAKNAS","-1930","1931-1940","1941-1950","1951-1960","1961-1970","1971-1980","1981-1990","1991-2000","2001-2010","2011-"]}},{"code":"Tid","selection":{"filter":"item","values":["2017"]}}],"response":{"format":"json"}}
 		housesDataLocal = {}
 		housesDataLocal["keys"] = []
