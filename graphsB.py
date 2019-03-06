@@ -26,8 +26,8 @@ def graph2ProcessData(dataList):
 
 	return dataList
 
-def getNumberOfApartments():
-	
+def getNumberOfApartments(code):
+	return sum(dataFrameService.getNumberOfAppartmentsData(code)["dataFrame"]["FLERBOST"])
 
 def plotBarHousesData(startIndex, endIndex):
 	for codeIndex in range(startIndex, endIndex):
@@ -98,6 +98,19 @@ def plotHolidayHosesPerYear(startIndex, endIndex):
 		except ValueError as err:
 				print(colored("[Antal fritidshus mot År]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
+def plotTable2Graph2(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getNumberOfHolidaysByRegion(regionCodes[codeIndex])
+			y = dataFrame["data"]
+			trace0 = go.Scatter(x = dataFrame["years"], y = y, text = y, hoverinfo = 'text', marker = dict(color = "blue", opacity = 0.2, line = dict(color = "blue")), fill = 'tonexty')
+			text = len(y) * [getNumberOfApartments(regionCodes[codeIndex])]
+			trace1 = go.Scatter(x = dataFrame["years"], y = y + text, text = text, hoverinfo = 'text', marker = dict(color = "red", opacity = 0.2, line = dict(color = "red")), fill = 'tonexty')
+			layout = go.Layout(title = "Antal fritidshus, Antal lagenheter och Antal Bostandshus", xaxis = dict(title = "År"))
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/antal_fritidshus_antal_lagenheter_och_antal_bostandshus_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+				print(colored("[Antal fritidshus, Antal lagenheter och Antal Bostandshus]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+
 if __name__ == "__main__":
 	gh.createDirectories(["houses"])
 
@@ -125,8 +138,8 @@ if __name__ == "__main__":
 		print("Wrong indexes")
 		exit()
 	
-	# startIndex = regionCodes.index("0885")
-	# endIndex = startIndex + 1
+	startIndex = regionCodes.index("0885")
+	endIndex = startIndex + 1
 	
 	print("Start index: ", startIndex)
 	print("End index: ", endIndex)
@@ -136,6 +149,7 @@ if __name__ == "__main__":
 	2. Bestånd idag ackumulerat efer byggnadsår
 	3. Fördelning av lågenheter
 	4. Antal fritidshus mot År
+	5. Antal fritidshus, Antal lagenheter och Antal Bostandshus
 	"""
 
 	print(initial_text)
@@ -150,7 +164,10 @@ if __name__ == "__main__":
 			plotPieChartHousesData(startIndex, endIndex)
 		elif cmd == '4':
 			plotHolidayHosesPerYear(startIndex, endIndex)
+		elif cmd == '5':
+			plotTable2Graph2(startIndex, endIndex)
 		elif cmd == 'q':
 			break
 		else:
 			print("Invalid command.")
+	# getNumberOfApartments()
