@@ -17,6 +17,7 @@ moveinsData = {}
 moveoutsData = {}
 housesData = {}
 holidaysHousesData = {}
+soldHousesData = {}
 deathRiskData = None
 birthsShare = None
 kommData = None
@@ -371,6 +372,30 @@ def getNumberOfHolidaysByRegion(code):
 				exception = True
 				getNumberOfHolidaysByRegion(code)
 	return holidaysHousesData[code]
+
+def getNumberOfSoldHouses(code):
+	global soldHousesData
+	global exception
+
+	if code not in soldHousesData:
+		soldHousesUrl = mainUrl + "BO/BO0101/BO0101A/LagenhetNyKv16"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":["0885"]}},{"code":"Hustyp","selection":{"filter":"item","values":["FLERBO","SMÅHUS"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BO0101A3"]}},{"code":"Tid","selection":{"filter":"item","values":["1991K1","1991K2","1991K3","1991K4","1992K1","1992K2","1992K3","1992K4","1993K1","1993K2","1993K3","1993K4","1994K1","1994K2","1994K3","1994K4","1995K1","1995K2","1995K3","1995K4","1996K1","1996K2","1996K3","1996K4","1997K1","1997K2","1997K3","1997K4","1998K1","1998K2","1998K3","1998K4","1999K1","1999K2","1999K3","1999K4","2000K1","2000K2","2000K3","2000K4","2001K1","2001K2","2001K3","2001K4","2002K1","2002K2","2002K3","2002K4","2003K1","2003K2","2003K3","2003K4","2004K1","2004K2","2004K3","2004K4","2005K1","2005K2","2005K3","2005K4","2006K1","2006K2","2006K3","2006K4","2007K1","2007K2","2007K3","2007K4","2008K1","2008K2","2008K3","2008K4","2009K1","2009K2","2009K3","2009K4","2010K1","2010K2","2010K3","2010K4","2011K1","2011K2","2011K3","2011K4","2012K1","2012K2","2012K3","2012K4","2013K1","2013K2","2013K3","2013K4","2014K1","2014K2","2014K3","2014K4","2015K1","2015K2","2015K3","2015K4","2016K1","2016K2","2016K3","2016K4","2017K1","2017K2","2017K3","2017K4","2018K1","2018K2","2018K3","2018K4"]}}],"response":{"format":"json"}}
+
+		try:
+			response = request.post(url = soldHousesUrl, json = jsonBody, headers = headers);
+			json_data = simplejson.loads(response.text)["data"]
+
+			print(json_data)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getNumberOfSoldHouses(code)
 
 def getTfrSverige():
 	return [0, 0.00965481641509724, 0.0556729215856838, 0.214757530278841, 0.373823020523653, 0.894762501075413, 1.39310397568133, 2.34378793817093, 3.18136716024127, 4.01894638231161, 5.08271596677213, 6.3047863035436, 7.00668189769718, 8.47754060280467, 9.99363355670053, 11.5097456290447, 12.5961132194511, 13.9312882966418, 13.6606284233971, 14.0232671516379, 13.2097962929328, 12.5320281805928, 11.3114682012407, 9.61592949116249, 7.7846880347191, 5.81776295035895, 4.57460496506103, 3.48970949517737, 2.29174752177113, 1.04858953647321, 0.732714532888509, 0.507288908432193]
