@@ -111,66 +111,112 @@ def plotTable2Graph2(startIndex, endIndex):
 		except ValueError as err:
 				print(colored("[Antal fritidshus, Antal lagenheter och Antal Bostandshus]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
-def plotSoldHousesTable3Graph1(code):
-	dataFrameService.getNumberOfSoldHouses(code)
+def plotSoldHousesTable3Graph1(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			count_y1 = 0
+			count_y2 = 0 
+			dataFrame = dataFrameService.getNumberOfSoldHouses(regionCodes[codeIndex])
+			y1 = list(dataFrame["FLERBO"])
+			y2 = list(dataFrame["SMÅHUS"])
+
+			for i in range(1, len(y1)):
+				y1[i] = y1[i] + y1[i-1]
+				y2[i] = y2[i] + y2[i-1]
+				if y1[i] >= y2[i]:
+					count_y1 += 1
+				else:
+					count_y2 += 1
+			trace0 = go.Scatter(y = y1, x = dataFrame["keys"], name = "Flerbostadshus", line = dict(color = 'blue'), marker = dict(color = "blue", opacity = 0.2, line = dict(color = "blue")), fill = 'tonexty')
+			trace1 = go.Scatter(y = y2, x = dataFrame["keys"], name = "Smahus", line = dict(color = 'red'), marker = dict(color = "red", opacity = 0.2, line = dict(color = "red")), fill = 'tonexty')
+			layout = go.Layout(title = "Antal påbörjade lägenheter", xaxis = dict(title = "Färdigställda lägenheter i nybyggda hus/datum"))
+			
+			if count_y1 < count_y2:
+				data = [trace0, trace1]
+			else:
+				data = [trace1, trace0]
+			plot(go.Figure(data = data, layout = layout), filename = "houses/antal_påbörjade_lägenheter_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+				print(colored("[Antal påbörjade lägenheter]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+
+def plotDemolitionGraph(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getDemolitionData(regionCodes[codeIndex])
+			y1 = list(dataFrame["1"])
+			y2 = list(dataFrame["2"])
+			y3 = list(dataFrame["3"])
+			y = list(numpy.add(list(numpy.add(y1, y2)), y3))
+
+			data = [go.Scatter(y = y, x = dataFrame["keys"], name = "Flerbostadshus", line = dict(color = 'blue'))]
+			layout = go.Layout(title = "Antal rivna lägenheter i flerbostadshus per År", xaxis = dict(title = "År"))
+			plot(go.Figure(data = data, layout = layout), filename = "houses/antal_rivna_lägenheter_i_flerbostadshus_per_är_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+
+		except ValueError as err:
+			print(colored("[Antal rivna lägenheter i flerbostadshus per År]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])			
 
 if __name__ == "__main__":
-	# gh.createDirectories(["houses"])
+	gh.createDirectories(["houses"])
 
-	# maxIndex = len(regionCodes) - 1
-	# startIndex = 0
-	# endIndex = maxIndex
-	# cmd = input("Include plotlyjs(Y or N, default: N)?: ")
-	# if cmd == 'Y':
-	# 	setPlotlyInclusion(True)
+	maxIndex = len(regionCodes) - 1
+	startIndex = 0
+	endIndex = maxIndex
+	cmd = input("Include plotlyjs(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setPlotlyInclusion(True)
 
-	# cmd = input("Open each file after creation(Y or N, default: N)?: ")
-	# if cmd == 'Y':
-	# 	setAutoOpen(True)
+	cmd = input("Open each file after creation(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setAutoOpen(True)
 
-	# index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
-	# index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
+	index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
+	index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
 	
-	# if index1:
-	# 	startIndex = int(index1)
+	if index1:
+		startIndex = int(index1)
 
-	# if index2:
-	# 	endIndex = int(index2)
+	if index2:
+		endIndex = int(index2)
 
-	# if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
-	# 	print("Wrong indexes")
-	# 	exit()
+	if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
+		print("Wrong indexes")
+		exit()
 	
 	# startIndex = regionCodes.index("0885")
 	# endIndex = startIndex + 1
 	
-	# print("Start index: ", startIndex)
-	# print("End index: ", endIndex)
+	print("Start index: ", startIndex)
+	print("End index: ", endIndex)
 
-	# initial_text = """
-	# 1. Fördelning över byggår för bestånd per 2017
-	# 2. Bestånd idag ackumulerat efer byggnadsår
-	# 3. Fördelning av lågenheter
-	# 4. Antal fritidshus mot År
-	# 5. Antal fritidshus, Antal lagenheter och Antal Bostandshus
-	# """
+	initial_text = """
+	1. Fördelning över byggår för bestånd per 2017
+	2. Bestånd idag ackumulerat efer byggnadsår
+	3. Fördelning av lågenheter
+	4. Antal fritidshus mot År
+	5. Antal fritidshus, Antal lagenheter och Antal Bostandshus
+	6. Antal påbörjade lägenheter
+	7. Antal rivna lägenheter i flerbostadshus per År
+	"""
 
-	# print(initial_text)
+	print(initial_text)
 
-	# while True:
-	# 	cmd = input("\nEnter a number to select graph, or q to exit: ")
-	# 	if cmd == '1':
-	# 		plotBarHousesData(startIndex, endIndex)
-	# 	elif cmd == '2':
-	# 		plotLineHosesData(startIndex, endIndex)
-	# 	elif cmd == '3':
-	# 		plotPieChartHousesData(startIndex, endIndex)
-	# 	elif cmd == '4':
-	# 		plotHolidayHosesPerYear(startIndex, endIndex)
-	# 	elif cmd == '5':
-	# 		plotTable2Graph2(startIndex, endIndex)
-	# 	elif cmd == 'q':
-	# 		break
-	# 	else:
-	# 		print("Invalid command.")
-	plotSoldHousesTable3Graph1("0885")
+	while True:
+		cmd = input("\nEnter a number to select graph, or q to exit: ")
+		if cmd == '1':
+			plotBarHousesData(startIndex, endIndex)
+		elif cmd == '2':
+			plotLineHosesData(startIndex, endIndex)
+		elif cmd == '3':
+			plotPieChartHousesData(startIndex, endIndex)
+		elif cmd == '4':
+			plotHolidayHosesPerYear(startIndex, endIndex)
+		elif cmd == '5':
+			plotTable2Graph2(startIndex, endIndex)
+		elif cmd == '6':
+			plotSoldHousesTable3Graph1(startIndex, endIndex)
+		elif cmd == '7':
+			plotDemolitionGraph(startIndex, endIndex)
+		elif cmd == 'q':
+			break
+		else:
+			print("Invalid command.")
