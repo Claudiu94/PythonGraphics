@@ -19,6 +19,8 @@ housesData = {}
 holidaysHousesData = {}
 demolitionData = {}
 soldHousesData = {}
+soldHousesDataByPropertType = {}
+averageRentData = {}
 deathRiskData = None
 birthsShare = None
 kommData = None
@@ -414,14 +416,14 @@ def getDemolitionData(code):
 	global exception
 
 	if code not in demolitionData:
-		soldHousesUrl = mainUrl + "BO/BO0102/BO0102C/LghRivRegUppAr"
+		demolitionUrl = mainUrl + "BO/BO0102/BO0102C/LghRivRegUppAr"
 		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":[code]}},{"code":"Upplatelseform","selection":{"filter":"item","values":["1","2","3"]}}],"response":{"format":"json"}}
 		demolitionDataLocal = {}
 		demolitionDataLocal["keys"] = []
 		lastKey = None
 
 		try:
-			response = request.post(url = soldHousesUrl, json = jsonBody, headers = headers);
+			response = request.post(url = demolitionUrl, json = jsonBody, headers = headers);
 			json_data = simplejson.loads(response.text)["data"]
 
 			for val in json_data:
@@ -443,6 +445,76 @@ def getDemolitionData(code):
 				exception = True
 				getDemolitionData(code)
 	return demolitionData[code]
+
+def getAverageRentByRegion(code):
+	global averageRentData
+	global exception
+
+	if code not in averageRentData:
+		url = mainUrl + "BO/BO0406/BO0406E/BO0406Tab01"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Hyresuppg","selection":{"filter":"item","values":["Ah_kvm"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["000000RZ", "000000MQ"]}}],"response":{"format":"json"}}
+		averageRentDataLocal = {}
+		averageRentDataLocal["keys"] = []
+		averageRentDataLocal["average"] = []
+		averageRentDataLocal["deviation"] = []
+		
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers);
+			json_data = simplejson.loads(response.text)["data"]
+
+			for val in json_data:
+				averageRentDataLocal["keys"].append(val["key"][2])
+				averageRentDataLocal["average"].append((int)(val["values"][0]))
+				averageRentDataLocal["deviation"].append((int)(val["values"][1]))
+			
+			averageRentData[code] = pd.DataFrame.from_dict(averageRentDataLocal)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getAverageRentByRegion(code)
+	return averageRentData[code]
+
+def getSoldHousesByPropertyAndRegion(code):
+	global soldHousesDataByPropertType
+	global exception
+
+	if code not in averageRentData:
+		url = mainUrl + "BO/BO0501/BO0501B/FastprisSHRegionAr"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BO0501C1"]}}],"response":{"format":"json"}}
+		soldHousesDataByPropertTypeLocal = {}
+		soldHousesDataByPropertTypeLocal["keys"] = []
+		
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers);
+			json_data = simplejson.loads(response.text)["data"]
+			lastKey = None
+
+			for val in json_data:
+				if val["key"][1] != lastKey:
+					lastKey = val["key"][1]
+					soldHousesDataByPropertTypeLocal[lastKey] = []
+				if val["key"][2] not in soldHousesDataByPropertTypeLocal["keys"]:
+					soldHousesDataByPropertTypeLocal["keys"].append(val["key"][2])
+				soldHousesDataByPropertTypeLocal[lastKey].append(int(val["values"][0]))
+			soldHousesDataByPropertType[code] = pd.DataFrame.from_dict(soldHousesDataByPropertTypeLocal)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getSoldHousesByPropertyAndRegion(code)
+	return soldHousesDataByPropertType[code]
+
 
 
 def getTfrSverige():

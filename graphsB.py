@@ -155,68 +155,90 @@ def plotDemolitionGraph(startIndex, endIndex):
 		except ValueError as err:
 			print(colored("[Antal rivna lägenheter i flerbostadshus per År]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])			
 
+def plotAverageRentGraph(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getAverageRentByRegion(regionCodes[codeIndex])
+			avg = list(dataFrame["average"])
+			dev = list(dataFrame["deviation"])
+			negDev = [i * (-1) for i in dev]
+			y1 = numpy.add(avg, dev)
+			y2 = numpy.add(avg, negDev)
+
+			trace0 = go.Scatter(y = y1, x = dataFrame["keys"], line = dict(color = 'red'))
+			trace1 = go.Scatter(y = y2, x = dataFrame["keys"], line = dict(color = 'red'), marker = dict(color = "red", opacity = 0.2, line = dict(color = "red")), fill = 'tonexty')
+			layout = go.Layout(title = "Genomsnittlig hyra per kvm i omradet, 95% konfidens", xaxis = dict(title = "År"), yaxis = dict(title = "kr/År"))
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/genomsnittlig_hyra_per_kvm_i_omradet_95_konfidens_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+			print(colored("[Genomsnittlig hyra per kvm i omradet, 95% konfidens]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])			
+
 if __name__ == "__main__":
-	gh.createDirectories(["houses"])
+	# gh.createDirectories(["houses"])
 
-	maxIndex = len(regionCodes) - 1
-	startIndex = 0
-	endIndex = maxIndex
-	cmd = input("Include plotlyjs(Y or N, default: N)?: ")
-	if cmd == 'Y':
-		setPlotlyInclusion(True)
+	# maxIndex = len(regionCodes) - 1
+	# startIndex = 0
+	# endIndex = maxIndex
+	# cmd = input("Include plotlyjs(Y or N, default: N)?: ")
+	# if cmd == 'Y':
+	# 	setPlotlyInclusion(True)
 
-	cmd = input("Open each file after creation(Y or N, default: N)?: ")
-	if cmd == 'Y':
-		setAutoOpen(True)
+	# cmd = input("Open each file after creation(Y or N, default: N)?: ")
+	# if cmd == 'Y':
+	# 	setAutoOpen(True)
 
-	index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
-	index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
+	# index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
+	# index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
 	
-	if index1:
-		startIndex = int(index1)
+	# if index1:
+	# 	startIndex = int(index1)
 
-	if index2:
-		endIndex = int(index2)
+	# if index2:
+	# 	endIndex = int(index2)
 
-	if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
-		print("Wrong indexes")
-		exit()
+	# if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
+	# 	print("Wrong indexes")
+		# exit()
 	
-	# startIndex = regionCodes.index("0885")
-	# endIndex = startIndex + 1
+	startIndex = regionCodes.index("0885")
+	endIndex = startIndex + 1
 	
 	print("Start index: ", startIndex)
 	print("End index: ", endIndex)
 
-	initial_text = """
-	1. Fördelning över byggår för bestånd per 2017
-	2. Bestånd idag ackumulerat efer byggnadsår
-	3. Fördelning av lågenheter
-	4. Antal fritidshus mot År
-	5. Antal fritidshus, Antal lagenheter och Antal Bostandshus
-	6. Antal påbörjade lägenheter
-	7. Antal rivna lägenheter i flerbostadshus per År
-	"""
+	# initial_text = """
+	# 1. Fördelning över byggår för bestånd per 2017
+	# 2. Bestånd idag ackumulerat efer byggnadsår
+	# 3. Fördelning av lågenheter
+	# 4. Antal fritidshus mot År
+	# 5. Antal fritidshus, Antal lagenheter och Antal Bostandshus
+	# 6. Antal påbörjade lägenheter
+	# 7. Antal rivna lägenheter i flerbostadshus per År
+	# 8. Genomsnittlig hyra per kvm i omradet, 95% konfidens
+	# """
 
-	print(initial_text)
+	# print(initial_text)
 
-	while True:
-		cmd = input("\nEnter a number to select graph, or q to exit: ")
-		if cmd == '1':
-			plotBarHousesData(startIndex, endIndex)
-		elif cmd == '2':
-			plotLineHosesData(startIndex, endIndex)
-		elif cmd == '3':
-			plotPieChartHousesData(startIndex, endIndex)
-		elif cmd == '4':
-			plotHolidayHosesPerYear(startIndex, endIndex)
-		elif cmd == '5':
-			plotTable2Graph2(startIndex, endIndex)
-		elif cmd == '6':
-			plotSoldHousesTable3Graph1(startIndex, endIndex)
-		elif cmd == '7':
-			plotDemolitionGraph(startIndex, endIndex)
-		elif cmd == 'q':
-			break
-		else:
-			print("Invalid command.")
+	# while True:
+	# 	cmd = input("\nEnter a number to select graph, or q to exit: ")
+	# 	if cmd == '1':
+	# 		plotBarHousesData(startIndex, endIndex)
+	# 	elif cmd == '2':
+	# 		plotLineHosesData(startIndex, endIndex)
+	# 	elif cmd == '3':
+	# 		plotPieChartHousesData(startIndex, endIndex)
+	# 	elif cmd == '4':
+	# 		plotHolidayHosesPerYear(startIndex, endIndex)
+	# 	elif cmd == '5':
+	# 		plotTable2Graph2(startIndex, endIndex)
+	# 	elif cmd == '6':
+	# 		plotSoldHousesTable3Graph1(startIndex, endIndex)
+	# 	elif cmd == '7':
+	# 		plotDemolitionGraph(startIndex, endIndex)
+	# 	elif cmd == '8':
+	# 		plotAverageRentGraph(startIndex, endIndex)
+	# 	elif cmd == 'q':
+	# 		break
+	# 	else:
+	# 		print("Invalid command.")
+
+	print(dataFrameService.getSoldHousesByPropertyAndRegion("0885"))
