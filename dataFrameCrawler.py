@@ -20,7 +20,9 @@ holidaysHousesData = {}
 demolitionData = {}
 soldHousesData = {}
 soldHousesDataByPropertType = {}
+baseTaxationData = {}
 averageRentData = {}
+priceCoeficientData = {}
 deathRiskData = None
 birthsShare = None
 kommData = None
@@ -515,6 +517,76 @@ def getSoldHousesByPropertyAndRegion(code):
 				getSoldHousesByPropertyAndRegion(code)
 	return soldHousesDataByPropertType[code]
 
+def getBaseTaxationData(code):
+	global baseTaxationData
+	global exception
+
+	if code not in averageRentData:
+		url = mainUrl + "BO/BO0501/BO0501B/FastprisSHRegionAr"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BO0501C3"]}}],"response":{"format":"json"}}
+		baseTaxationDataLocal = {}
+		baseTaxationDataLocal["keys"] = []
+		
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers);
+			json_data = simplejson.loads(response.text)["data"]
+			lastKey = None
+
+			for val in json_data:
+				if val["key"][1] != lastKey:
+					lastKey = val["key"][1]
+					baseTaxationDataLocal[lastKey] = []
+				if val["key"][2] not in baseTaxationDataLocal["keys"]:
+					baseTaxationDataLocal["keys"].append(val["key"][2])
+				baseTaxationDataLocal[lastKey].append(int(val["values"][0]))
+			baseTaxationData[code] = pd.DataFrame.from_dict(baseTaxationDataLocal)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getBaseTaxationData(code)
+	return baseTaxationData[code]
+
+def getPriceCoeficientSingleFamiliesData(code):
+	global priceCoeficientData
+	global exception
+
+	if code not in priceCoeficientData:
+		url = mainUrl + "BO/BO0501/BO0501B/FastprisSHRegionAr"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BO0501C4"]}}],"response":{"format":"json"}}
+		priceCoeficientDataLocal = {}
+		priceCoeficientDataLocal["keys"] = []
+		
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers);
+			json_data = simplejson.loads(response.text)["data"]
+			lastKey = None
+
+			for val in json_data:
+				print(val)
+				if val["key"][1] != lastKey:
+					lastKey = val["key"][1]
+					priceCoeficientDataLocal[lastKey] = []
+				if val["key"][2] not in priceCoeficientDataLocal["keys"]:
+					priceCoeficientDataLocal["keys"].append(val["key"][2])
+				priceCoeficientDataLocal[lastKey].append(int(val["values"][0]))
+			priceCoeficientData[code] = pd.DataFrame.from_dict(priceCoeficientDataLocal)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getPriceCoeficientSingleFamiliesData(code)
+	return priceCoeficientData[code]
 
 
 def getTfrSverige():
