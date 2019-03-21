@@ -7,7 +7,7 @@ import pandas as pd
 import sys as sys
 
 headers = {"Content-type": "application/json"}
-mainUrl = "http://api.scb.se/OV0104/v1/doris/en/ssd/START/"
+mainUrl = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/"
 populationData = {}
 birthsData = {}
 deathsData = {}
@@ -23,6 +23,8 @@ soldHousesDataByPropertType = {}
 baseTaxationData = {}
 averageRentData = {}
 priceCoeficientData = {}
+socialBenefitsInYearsData = {}
+averageRatingInfluenceRateData = {}
 deathRiskData = None
 birthsShare = None
 kommData = None
@@ -568,13 +570,12 @@ def getPriceCoeficientSingleFamiliesData(code):
 			lastKey = None
 
 			for val in json_data:
-				print(val)
 				if val["key"][1] != lastKey:
 					lastKey = val["key"][1]
 					priceCoeficientDataLocal[lastKey] = []
 				if val["key"][2] not in priceCoeficientDataLocal["keys"]:
 					priceCoeficientDataLocal["keys"].append(val["key"][2])
-				priceCoeficientDataLocal[lastKey].append(int(val["values"][0]))
+				priceCoeficientDataLocal[lastKey].append(float(val["values"][0]))
 			priceCoeficientData[code] = pd.DataFrame.from_dict(priceCoeficientDataLocal)
 		except:
 			if exception:
@@ -587,6 +588,64 @@ def getPriceCoeficientSingleFamiliesData(code):
 				exception = True
 				getPriceCoeficientSingleFamiliesData(code)
 	return priceCoeficientData[code]
+
+def getSocialBenefitsInYearsData(code):
+	global socialBenefitsInYearsData
+	global exception
+
+	if code not in socialBenefitsInYearsData:
+		url = mainUrl + "HE/HE0000/HE0000T02"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Kon","selection":{"filter":"item","values":["1"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["HE0000AY","HE0000AZ","HE0000A1","HE0000A2","HE0000A3","HE0000A5"]}}],"response":{"format":"json"}}
+		socialBenefitsInYearsDataLocal = {}
+		socialBenefitsInYearsDataLocal["keys"] = {}
+
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers)
+			print(response)
+			json_data = simplejson.loads(response.text)["data"]
+			lastKey = None
+			print(response)
+			for val in json_data:
+				print(val)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getSocialBenefitsInYearsData(code)
+
+def getAverageRatingInfluenceRateData(code):
+	global averageRatingInfluenceRateData
+	global exception
+
+	if code not in averageRatingInfluenceRateData:
+		url = mainUrl + "ME/ME0003/MedborgarenA"
+		print(url)
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"item","values":[code]}},{"code":"Kon","selection":{"filter":"item","values":["1+2"]}},{"code":"MedborNRI","selection":{"filter":"item","values":["Fr A8:0","Fr A9:0","Fr A3:0"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["000000WO"]}}],"response":{"format":"json"}}
+		averageRatingInfluenceRateDataLocal = {}
+		averageRatingInfluenceRateDataLocal["keys"] = {}
+
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers)
+			print(response)
+			json_data = simplejson.loads(response.text)["data"]
+
+			for val in json_data:
+				print(val)
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getAverageRatingInfluenceRateData(code)
 
 
 def getTfrSverige():

@@ -206,6 +206,18 @@ def plotPriceCoeficientGraph(startIndex, endIndex):
 		except ValueError as err:
 			print(colored("[Köpeskillingskoefficient (prix/taxvärde)]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])				
 
+def plotSharesInLabourMarket(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getSocialBenefitsInYearsData(regionCodes[codeIndex])
+			for i in range(0, len(dataFrame["keys"])):
+				y.append(0)
+			trace0 = go.Scatter(y = y, x = dataFrame["keys"], line = dict(color = 'blue'))
+			layout = go.Layout(title = "Antal i arbetsmarknadsåtgärder", xaxis = dict(title = "date"), yaxis = dict(title = "andel i arb. åtgärd"))
+			plot(go.Figure(data = [trace0], layout = layout), filename = "houses/antal_i_arbetsmarknadsåtgärder_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+			print(colored("Antal i arbetsmarknadsåtgärder", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+
 if __name__ == "__main__":
 	# gh.createDirectories(["houses"])
 
@@ -249,6 +261,8 @@ if __name__ == "__main__":
 	# 7. Antal rivna lägenheter i flerbostadshus per År
 	# 8. Genomsnittlig hyra per kvm i omradet, 95% konfidens
 	# 9. Antal affärer per är
+	# 10. Medelpris
+	# 11. Köpeskillingskoefficient (prix/taxvärde)
 	# """
 
 	# print(initial_text)
@@ -271,11 +285,14 @@ if __name__ == "__main__":
 	# 		plotDemolitionGraph(startIndex, endIndex)
 	# 	elif cmd == '8':
 	# 		plotAverageRentGraph(startIndex, endIndex)
-	# 	elif cmd == '9':
-	# 		plotSoldHousesByRegionGraph(startIndex, endIndex)
+	#	elif cmd == '9':
+	#		plotSoldHousesByRegionGraph(startIndex, endIndex)
+	#	elif cmd == '10':
+	#		plotBaseTaxationGraph(startIndex, endIndex)
+	# 	elif cmd == '11':
+	# 		plotPriceCoeficientGraph(startIndex, endIndex)
 	# 	elif cmd == 'q':
 	# 		break
 	# 	else:
 	# 		print("Invalid command.")
-
-	plotPriceCoeficientGraph(startIndex, endIndex)
+	dataFrameService.getSocialBenefitsInYearsData("0885")
