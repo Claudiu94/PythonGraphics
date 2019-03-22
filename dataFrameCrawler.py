@@ -597,16 +597,20 @@ def getSocialBenefitsInYearsData(code):
 		url = mainUrl + "HE/HE0000/HE0000T02"
 		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"Kon","selection":{"filter":"item","values":["1"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["HE0000AY","HE0000AZ","HE0000A1","HE0000A2","HE0000A3","HE0000A5"]}}],"response":{"format":"json"}}
 		socialBenefitsInYearsDataLocal = {}
-		socialBenefitsInYearsDataLocal["keys"] = {}
+		socialBenefitsInYearsDataLocal["keys"] = []
 
 		try:
 			response = request.post(url = url, json = jsonBody, headers = headers)
-			print(response)
 			json_data = simplejson.loads(response.text)["data"]
-			lastKey = None
-			print(response)
+			for i in range(0, len(json_data[0]["values"])):
+				socialBenefitsInYearsDataLocal[i] = []
+
 			for val in json_data:
-				print(val)
+				if val["key"][2] not in socialBenefitsInYearsDataLocal["keys"]:
+					socialBenefitsInYearsDataLocal["keys"].append(val["key"][2])
+				for i in range(0, len(val["values"])):
+					socialBenefitsInYearsDataLocal[i].append((int)(val["values"][i]))
+			socialBenefitsInYearsData[code] = socialBenefitsInYearsDataLocal
 		except:
 			if exception:
 				print("Second try. Raise an exception and continue...")
@@ -617,6 +621,7 @@ def getSocialBenefitsInYearsData(code):
 				printException1()
 				exception = True
 				getSocialBenefitsInYearsData(code)
+	return socialBenefitsInYearsData[code]
 
 def getAverageRatingInfluenceRateData(code):
 	global averageRatingInfluenceRateData
@@ -624,18 +629,24 @@ def getAverageRatingInfluenceRateData(code):
 
 	if code not in averageRatingInfluenceRateData:
 		url = mainUrl + "ME/ME0003/MedborgarenA"
-		print(url)
 		jsonBody = {"query":[{"code":"Region","selection":{"filter":"item","values":[code]}},{"code":"Kon","selection":{"filter":"item","values":["1+2"]}},{"code":"MedborNRI","selection":{"filter":"item","values":["Fr A8:0","Fr A9:0","Fr A3:0"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["000000WO"]}}],"response":{"format":"json"}}
 		averageRatingInfluenceRateDataLocal = {}
-		averageRatingInfluenceRateDataLocal["keys"] = {}
+		averageRatingInfluenceRateDataLocal["keys"] = []
 
 		try:
 			response = request.post(url = url, json = jsonBody, headers = headers)
-			print(response)
 			json_data = simplejson.loads(response.text)["data"]
+			lastKey = None
 
 			for val in json_data:
-				print(val)
+				if val["values"][0] != "..":
+					if val["key"][2] != lastKey:
+						lastKey = val["key"][2]
+						averageRatingInfluenceRateDataLocal[lastKey] = []
+					if val["key"][3] not in averageRatingInfluenceRateDataLocal["keys"]:
+						averageRatingInfluenceRateDataLocal["keys"].append(val["key"][3])
+					averageRatingInfluenceRateDataLocal[lastKey].append(float(val["values"][0]))
+			averageRatingInfluenceRateData[code] = pd.DataFrame.from_dict(averageRatingInfluenceRateDataLocal)
 		except:
 			if exception:
 				print("Second try. Raise an exception and continue...")
@@ -646,6 +657,7 @@ def getAverageRatingInfluenceRateData(code):
 				printException1()
 				exception = True
 				getAverageRatingInfluenceRateData(code)
+	return averageRatingInfluenceRateData[code]
 
 
 def getTfrSverige():

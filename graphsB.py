@@ -210,13 +210,44 @@ def plotSharesInLabourMarket(startIndex, endIndex):
 	for codeIndex in range(startIndex, endIndex):
 		try:
 			dataFrame = dataFrameService.getSocialBenefitsInYearsData(regionCodes[codeIndex])
+			y = []
 			for i in range(0, len(dataFrame["keys"])):
-				y.append(0)
+				sum = 0
+				for j in range(0, len(dataFrame) - 2):
+					sum += dataFrame[j][i]
+				y.append(sum / dataFrame[len(dataFrame) - 2][i])
 			trace0 = go.Scatter(y = y, x = dataFrame["keys"], line = dict(color = 'blue'))
 			layout = go.Layout(title = "Antal i arbetsmarknadsåtgärder", xaxis = dict(title = "date"), yaxis = dict(title = "andel i arb. åtgärd"))
 			plot(go.Figure(data = [trace0], layout = layout), filename = "houses/antal_i_arbetsmarknadsåtgärder_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
 		except ValueError as err:
 			print(colored("Antal i arbetsmarknadsåtgärder", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
+
+def plotLabourMarketData(startIndex, endIndex):
+	names = ["Sjukpenning", "Sjuk- och aktivitetsersersättning", "Arbetslöshet", "Arbetsmarknadsåtgärder", "Ekonomiskt bistånd"]
+	colors = ["blue", "red", "yellow", "green", "orange"]
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getSocialBenefitsInYearsData(regionCodes[codeIndex])
+			data = []
+			for i in range(0, len(dataFrame) - 2):
+				trace = go.Scatter(y = dataFrame[i], x = dataFrame["keys"], name = names[i], line = dict(color = colors[i]))
+				data.append(trace)
+			layout = go.Layout(title = "Arbetsmarknadsdata, detaljerad", xaxis = dict(title = "date"), yaxis = dict(title = "andel i arb. åtgärd"))
+			plot(go.Figure(data = data, layout = layout), filename = "houses/arbetsmarknadsdata_detaljerad_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+			print(colored("Arbetsmarknadsdata, detaljerad", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])	
+
+def plotAverageRatingInfluenceData(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getAverageRatingInfluenceRateData(regionCodes[codeIndex])
+			trace0 = go.Scatter(y = dataFrame["Fr A3:0"], x = dataFrame["keys"], name = "BOSTÄDER INDEX", line = dict(color = "yellow"))
+			trace1 = go.Scatter(y = dataFrame["Fr A8:0"], x = dataFrame["keys"], name = "NRI, HELHETEN", line = dict(color = "blue"))
+			trace2 = go.Scatter(y = dataFrame["Fr A9:0"], x = dataFrame["keys"], name = "REKOMMENDATION INDEX", line = dict(color = "red"))
+			layout = go.Layout(title = "Sammanställning nojdhet kommun")
+			plot(go.Figure(data = [trace0, trace1, trace2], layout = layout), filename = "houses/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+			print(colored("Sammanställning nojdhet kommun", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])	
 
 if __name__ == "__main__":
 	# gh.createDirectories(["houses"])
@@ -263,6 +294,8 @@ if __name__ == "__main__":
 	# 9. Antal affärer per är
 	# 10. Medelpris
 	# 11. Köpeskillingskoefficient (prix/taxvärde)
+	# 12. Antal i arbetsmarknadsåtgärder\
+	# 13. Arbetsmarknadsdata, detaljerad
 	# """
 
 	# print(initial_text)
@@ -291,8 +324,13 @@ if __name__ == "__main__":
 	#		plotBaseTaxationGraph(startIndex, endIndex)
 	# 	elif cmd == '11':
 	# 		plotPriceCoeficientGraph(startIndex, endIndex)
+	#	 elif cmd == '12':
+	#	 	plotSharesInLabourMarket(startIndex, endIndex)
+	#	elif cmd == '13':
+	#		plotLabourMarketData(startIndex, endIndex)
 	# 	elif cmd == 'q':
 	# 		break
 	# 	else:
 	# 		print("Invalid command.")
-	dataFrameService.getSocialBenefitsInYearsData("0885")
+	plotAverageRatingInfluenceData(startIndex, endIndex)
+	
