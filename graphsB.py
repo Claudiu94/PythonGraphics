@@ -249,6 +249,19 @@ def plotAverageRatingInfluenceData(startIndex, endIndex):
 		except ValueError as err:
 			print(colored("Sammanställning nojdhet kommun", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])	
 
+def plotCitizenSurveyData(startIndex, endIndex):
+	for codeIndex in range(startIndex, endIndex):
+		try:
+			dataFrame = dataFrameService.getCitizenSurveyData(regionCodes[codeIndex])
+			trace0 = go.Scatter(y = dataFrame["Fr A4:0"], x = dataFrame["keys"], name = "KOMMUNIKATIONER INDEX", line = dict(color = "yellow"))
+			trace1 = go.Scatter(y = dataFrame["Fr A1:0"], x = dataFrame["keys"], name = "ARBETSMÖJLIGHETER INDEX", line = dict(color = "blue"))
+			trace2 = go.Scatter(y = dataFrame["Fr A2:0"], x = dataFrame["keys"], name = "UTBILDNINGSMÖJLIGHETER INDEX", line = dict(color = "red"))
+			trace3 = go.Scatter(y = dataFrame["Fr A5:0"], x = dataFrame["keys"], name = "KOMMERSIELLT UTBUD INDEX", line = dict(color = "green"))
+			trace4 = go.Scatter(y = dataFrame["Fr A6:0"], x = dataFrame["keys"], name = "FRITIDSMÖJLIGHETER INDEX", line = dict(color = "orange"))
+			layout = go.Layout(title = "Sammanställning nojdhet kommun")
+			plot(go.Figure(data = [trace0, trace1, trace2, trace3, trace4], layout = layout), filename = "houses/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+		except ValueError as err:
+			print(colored("Sammanställning nojdhet kommun 2", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 if __name__ == "__main__":
 	# gh.createDirectories(["houses"])
 
@@ -332,5 +345,5 @@ if __name__ == "__main__":
 	# 		break
 	# 	else:
 	# 		print("Invalid command.")
-	plotAverageRatingInfluenceData(startIndex, endIndex)
+	plotCitizenSurveyData(startIndex, endIndex)
 	
