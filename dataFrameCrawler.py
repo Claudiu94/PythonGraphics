@@ -16,6 +16,7 @@ emigrationData = {}
 moveinsData = {}
 moveoutsData = {}
 housesData = {}
+newlyBuildAppartmentsData = {}
 holidaysHousesData = {}
 demolitionData = {}
 soldHousesData = {}
@@ -362,7 +363,7 @@ def getNumberOfHolidaysByRegion(code):
 		holidaysHousesDataLocal = {"years" : [], "data": []}
 		
 		try:
-			response = request.post(url = holidaysHousesUrl, json = jsonBody, headers = headers);
+			response = request.post(url = holidaysHousesUrl, json = jsonBody, headers = headers)
 			json_data = simplejson.loads(response.text)["data"]
 
 			for val in json_data:
@@ -381,6 +382,41 @@ def getNumberOfHolidaysByRegion(code):
 				getNumberOfHolidaysByRegion(code)
 	return holidaysHousesData[code]
 
+def getNewlyBuildAppartmentData(code):
+	global newlyBuildAppartmentsData
+	global exception
+
+	if code not in newlyBuildAppartmentsData:
+		url = mainUrl + "BO/BO0101/BO0101A/LagenhetNyKv16"
+		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07","values":[code]}},{"code":"Hustyp","selection":{"filter":"item","values":["FLERBO","SMÅHUS"]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BO0101A3"]}},{"code":"Tid","selection":{"filter":"item","values":["1991K1","1991K2","1991K3","1991K4","1992K1","1992K2","1992K3","1992K4","1993K1","1993K2","1993K3","1993K4","1994K1","1994K2","1994K3","1994K4","1995K1","1995K2","1995K3","1995K4","1996K1","1996K2","1996K3","1996K4","1997K1","1997K2","1997K3","1997K4","1998K1","1998K2","1998K3","1998K4","1999K1","1999K2","1999K3","1999K4","2000K1","2000K2","2000K3","2000K4","2001K1","2001K2","2001K3","2001K4","2002K1","2002K2","2002K3","2002K4","2003K1","2003K2","2003K3","2003K4","2004K1","2004K2","2004K3","2004K4","2005K1","2005K2","2005K3","2005K4","2006K1","2006K2","2006K3","2006K4","2007K1","2007K2","2007K3","2007K4","2008K1","2008K2","2008K3","2008K4","2009K1","2009K2","2009K3","2009K4","2010K1","2010K2","2010K3","2010K4","2011K1","2011K2","2011K3","2011K4","2012K1","2012K2","2012K3","2012K4","2013K1","2013K2","2013K3","2013K4","2014K1","2014K2","2014K3","2014K4","2015K1","2015K2","2015K3","2015K4","2016K1","2016K2","2016K3","2016K4","2017K1","2017K2","2017K3","2017K4","2018K1","2018K2","2018K3","2018K4"]}}],"response":{"format":"json"}}
+		newlyBuildAppartmentsDataLocal = {}
+		newlyBuildAppartmentsDataLocal["keys"] = []
+		lastKey = None
+
+		try:
+			response = request.post(url = url, json = jsonBody, headers = headers);
+			json_data = simplejson.loads(response.text)["data"]
+			print()
+			for val in json_data:
+				if val["key"][1] != lastKey:
+					lastKey = val["key"][1]
+					newlyBuildAppartmentsDataLocal[lastKey] = []
+				if val["key"][2] not in newlyBuildAppartmentsDataLocal["keys"]:
+					newlyBuildAppartmentsDataLocal["keys"].append(val["key"][2])
+				newlyBuildAppartmentsDataLocal[lastKey].append(int(val["values"][0]))
+			newlyBuildAppartmentsData[code] = newlyBuildAppartmentsDataLocal
+		except:
+			if exception:
+				print("Second try. Raise an exception and continue...")
+				exception = False
+				
+				raise ValueError('No value for this code: ', code)
+			else:
+				printException1()
+				exception = True
+				getNewlyBuildAppartmentData(code)
+	return newlyBuildAppartmentsData[code]
+	
 def getNumberOfSoldHouses(code):
 	global soldHousesData
 	global exception
