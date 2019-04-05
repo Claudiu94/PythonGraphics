@@ -533,7 +533,6 @@ def getSoldHousesByPropertyAndRegion(code):
 		
 		try:
 			response = request.post(url = url, json = jsonBody, headers = headers);
-			print(response)
 			json_data = simplejson.loads(response.text)["data"]
 			lastKey = None
 
@@ -561,7 +560,7 @@ def getBaseTaxationData(code):
 	global baseTaxationData
 	global exception
 
-	if code not in averageRentData:
+	if code not in baseTaxationData:
 		url = mainUrl + "BO/BO0501/BO0501B/FastprisSHRegionAr"
 		jsonBody = {"query":[{"code":"Region","selection":{"filter":"vs:RegionKommun07EjAggr","values":[code]}},{"code":"ContentsCode","selection":{"filter":"item","values":["BO0501C3"]}}],"response":{"format":"json"}}
 		baseTaxationDataLocal = {}

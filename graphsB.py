@@ -291,7 +291,7 @@ def plotCitizenSurveyData(startIndex, endIndex):
 			trace3 = go.Scatter(y = dataFrame["Fr A5:0"], x = dataFrame["keys"], name = "KOMMERSIELLT UTBUD INDEX", line = dict(color = "green"))
 			trace4 = go.Scatter(y = dataFrame["Fr A6:0"], x = dataFrame["keys"], name = "FRITIDSMÖJLIGHETER INDEX", line = dict(color = "orange"))
 			layout = go.Layout(title = "Sammanställning nojdhet kommun")
-			plot(go.Figure(data = [trace0, trace1, trace2, trace3, trace4], layout = layout), filename = "nöjdhetsindex/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
+			plot(go.Figure(data = [trace0, trace1, trace2, trace3, trace4], layout = layout), filename = "nöjdhetsindex/sammanställning_nojdhet_kommun_2_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("Sammanställning nojdhet kommun 2", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 if __name__ == "__main__":
@@ -321,8 +321,8 @@ if __name__ == "__main__":
 		print("Wrong indexes")
 		exit()
 	
-	startIndex = regionCodes.index("0885")
-	endIndex = startIndex + 1
+	# startIndex = regionCodes.index("0885")
+	# endIndex = startIndex + 1
 	
 	print("Start index: ", startIndex)
 	print("End index: ", endIndex)
