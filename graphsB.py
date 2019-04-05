@@ -43,7 +43,7 @@ def plotBarHousesData(startIndex, endIndex):
 				index += 1
 
 			layout = go.Layout(barmode = 'stack', title = "Fördelning över byggår för bestånd per 2017")
-			plot(go.Figure(data = data, layout = layout), filename = "houses/fördelning_över_byggår_för_bestånd_per_2017_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
+			plot(go.Figure(data = data, layout = layout), filename = "aldersfördelning_bostadsbestånd/fördelning_över_byggår_för_bestånd_per_2017_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Fördelning över byggår för bestånd per 2017]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -68,7 +68,7 @@ def plotLineHosesData(startIndex, endIndex):
 				lastLists.append(initialValues)
 
 			layout = go.Layout(title = "Bestånd idag ackumulerat efer byggnadsår")
-			plot(go.Figure(data = data, layout = layout), filename = "houses/bestånd_idag_ackumulerat_efer_byggnadsår_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
+			plot(go.Figure(data = data, layout = layout), filename = "aldersfördelning_bostadsbestånd/bestånd_idag_ackumulerat_efer_byggnadsår_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Bestånd idag ackumulerat efer byggnadsår]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -84,7 +84,7 @@ def plotPieChartHousesData(startIndex, endIndex):
 				values.append(sum(dataFrame[key]))
 
 			layout = go.Layout(barmode = 'stack', title = "Fördelning av lågenheter")
-			plot(go.Figure(data = [go.Pie(labels=labels, values=values)], layout = layout), filename = "houses/fördelning_av_lågenheter_ " + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
+			plot(go.Figure(data = [go.Pie(labels=labels, values=values)], layout = layout), filename = "aldersfördelning_bostadsbestånd/fördelning_av_lågenheter_ " + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Fördelning av lågenheter]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -94,7 +94,7 @@ def plotHolidayHosesPerYear(startIndex, endIndex):
 			dataFrame = dataFrameService.getNumberOfHolidaysByRegion(regionCodes[codeIndex])
 			data = [go.Scatter(y = dataFrame["data"], x = dataFrame["years"], line = dict(color = 'blue'))]
 			layout = go.Layout(title = "Antal fritidshus mot År", xaxis = dict(title = "År"), yaxis = dict(title = "Antal fritidshus", range=[min(dataFrame["data"]), max(dataFrame["data"])]))
-			plot(go.Figure(data = data, layout = layout), filename = "houses/antal_fritidshus_År_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = data, layout = layout), filename = "fritidshus/antal_fritidshus_År_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 				print(colored("[Antal fritidshus mot År]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -107,7 +107,7 @@ def plotTable2Graph2(startIndex, endIndex):
 			text = len(y) * [getNumberOfApartments(regionCodes[codeIndex])]
 			trace1 = go.Scatter(x = dataFrame["years"], y = y + text, text = text, hoverinfo = 'text', marker = dict(color = "red", opacity = 0.2, line = dict(color = "red")), fill = 'tonexty')
 			layout = go.Layout(title = "Antal fritidshus, Antal lagenheter och Antal Bostandshus", xaxis = dict(title = "År"))
-			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/antal_fritidshus_antal_lagenheter_och_antal_bostandshus_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "fritidshus/antal_fritidshus_antal_lagenheter_och_antal_bostandshus_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 				print(colored("[Antal fritidshus, Antal lägenheter och Antal Bostandshus]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -135,7 +135,7 @@ def plotSoldHousesTable3Graph1(startIndex, endIndex):
 				data = [trace0, trace1]
 			else:
 				data = [trace1, trace0]
-			plot(go.Figure(data = data, layout = layout), filename = "houses/antal_påbörjade_lägenheter_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = data, layout = layout), filename = "nyproduktion/antal_påbörjade_lägenheter_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Antal påbörjade lägenheter]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -167,7 +167,7 @@ def plotNewlyBuildApparmentsProjection(startIndex, endIndex):
 			trace3 = go.Scatter(y = y3, x = projYears, name = "Projecte småhus", line = dict(color = 'green'))
 
 			layout = go.Layout(title = "Antal färdigställda lägenheter", xaxis = dict(title = "datum"))
-			plot(go.Figure(data = [trace0, trace1, trace2, trace3], layout = layout), filename = "houses/antal_färdigställda_lägenheter_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1, trace2, trace3], layout = layout), filename = "nyproduktion/antal_färdigställda_lägenheter_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Antal färdigställda lägenheter]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -182,7 +182,7 @@ def plotDemolitionGraph(startIndex, endIndex):
 
 			data = [go.Scatter(y = y, x = dataFrame["keys"], name = "Flerbostadshus", line = dict(color = 'blue'))]
 			layout = go.Layout(title = "Antal rivna lägenheter i flerbostadshus per År", xaxis = dict(title = "År"))
-			plot(go.Figure(data = data, layout = layout), filename = "houses/antal_rivna_lägenheter_i_flerbostadshus_per_är_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = data, layout = layout), filename = "rivning_byggnader/antal_rivna_lägenheter_i_flerbostadshus_per_är_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 
 		except ValueError as err:
 			print(colored("[Antal rivna lägenheter i flerbostadshus per År]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])			
@@ -200,7 +200,7 @@ def plotAverageRentGraph(startIndex, endIndex):
 			trace0 = go.Scatter(y = y1, x = dataFrame["keys"], line = dict(color = 'red'))
 			trace1 = go.Scatter(y = y2, x = dataFrame["keys"], line = dict(color = 'red'), marker = dict(color = "red", opacity = 0.2, line = dict(color = "red")), fill = 'tonexty')
 			layout = go.Layout(title = "Genomsnittlig hyra per kvm i omradet, 95% konfidens", xaxis = dict(title = "År"), yaxis = dict(title = "kr/År"))
-			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/genomsnittlig_hyra_per_kvm_i_omradet_95_konfidens_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "hyresnivåer_i_hyresbestånd/genomsnittlig_hyra_per_kvm_i_omradet_95_konfidens_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Genomsnittlig hyra per kvm i omradet, 95% konfidens]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -211,7 +211,7 @@ def plotSoldHousesByRegionGraph(startIndex, endIndex):
 			trace0 = go.Scatter(y = dataFrame["220"], x = dataFrame["keys"], name = 'Permanentbostad (ej tomtratt)', line = dict(color = 'blue'))
 			trace1 = go.Scatter(y = dataFrame["221"], x = dataFrame["keys"], name = 'fritidshus', line = dict(color = 'red'))
 			layout = go.Layout(title = "Antal affärer per är", xaxis = dict(title = "År"))
-			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/antal_affärer_per_är_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "försäljning/antal_affärer_per_är_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Antal affärer per är]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -222,7 +222,7 @@ def plotBaseTaxationGraph(startIndex, endIndex):
 			trace0 = go.Scatter(y = [i * 1000 for i in dataFrame["220"]], x = dataFrame["keys"], name = 'Permanentbostad (ej tomtratt)', line = dict(color = 'blue'))
 			trace1 = go.Scatter(y = [i * 1000 for i in dataFrame["221"]], x = dataFrame["keys"], name = 'fritidshus', line = dict(color = 'red'))
 			layout = go.Layout(title = "Medelpris", xaxis = dict(title = "År"))
-			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/medelpris_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "försäljning/medelpris_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Medelpris]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -234,7 +234,7 @@ def plotPriceCoeficientGraph(startIndex, endIndex):
 			trace0 = go.Scatter(y = dataFrame["220"], x = dataFrame["keys"], name = 'Permanentbostad (ej tomtratt)', line = dict(color = 'blue'))
 			trace1 = go.Scatter(y = dataFrame["221"], x = dataFrame["keys"], name = 'fritidshus', line = dict(color = 'red'))
 			layout = go.Layout(title = "Köpeskillingskoefficient (prix/taxvärde)", xaxis = dict(title = "År"))
-			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "houses/köpeskillingskoefficient_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1], layout = layout), filename = "försäljning/köpeskillingskoefficient_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("[Köpeskillingskoefficient (prix/taxvärde)]", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])				
 
@@ -250,7 +250,7 @@ def plotSharesInLabourMarket(startIndex, endIndex):
 				y.append(sum / dataFrame[len(dataFrame) - 2][i])
 			trace0 = go.Scatter(y = y, x = dataFrame["keys"], line = dict(color = 'blue'))
 			layout = go.Layout(title = "Antal i arbetsmarknadsåtgärder", xaxis = dict(title = "date"), yaxis = dict(title = "andel i arb. åtgärd"))
-			plot(go.Figure(data = [trace0], layout = layout), filename = "houses/antal_i_arbetsmarknadsåtgärder_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0], layout = layout), filename = "arbetsmarknad_hek/antal_i_arbetsmarknadsåtgärder_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("Antal i arbetsmarknadsåtgärder", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 
@@ -265,7 +265,7 @@ def plotLabourMarketData(startIndex, endIndex):
 				trace = go.Scatter(y = dataFrame[i], x = dataFrame["keys"], name = names[i], line = dict(color = colors[i]))
 				data.append(trace)
 			layout = go.Layout(title = "Arbetsmarknadsdata, detaljerad", xaxis = dict(title = "date"), yaxis = dict(title = "andel i arb. åtgärd"))
-			plot(go.Figure(data = data, layout = layout), filename = "houses/arbetsmarknadsdata_detaljerad_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = data, layout = layout), filename = "arbetsmarknad_hek/arbetsmarknadsdata_detaljerad_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("Arbetsmarknadsdata, detaljerad", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])	
 
@@ -277,7 +277,7 @@ def plotAverageRatingInfluenceData(startIndex, endIndex):
 			trace1 = go.Scatter(y = dataFrame["Fr A8:0"], x = dataFrame["keys"], name = "NRI, HELHETEN", line = dict(color = "blue"))
 			trace2 = go.Scatter(y = dataFrame["Fr A9:0"], x = dataFrame["keys"], name = "REKOMMENDATION INDEX", line = dict(color = "red"))
 			layout = go.Layout(title = "Sammanställning nojdhet kommun")
-			plot(go.Figure(data = [trace0, trace1, trace2], layout = layout), filename = "houses/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1, trace2], layout = layout), filename = "nöjdhetsindex/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("Sammanställning nojdhet kommun", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])	
 
@@ -291,35 +291,35 @@ def plotCitizenSurveyData(startIndex, endIndex):
 			trace3 = go.Scatter(y = dataFrame["Fr A5:0"], x = dataFrame["keys"], name = "KOMMERSIELLT UTBUD INDEX", line = dict(color = "green"))
 			trace4 = go.Scatter(y = dataFrame["Fr A6:0"], x = dataFrame["keys"], name = "FRITIDSMÖJLIGHETER INDEX", line = dict(color = "orange"))
 			layout = go.Layout(title = "Sammanställning nojdhet kommun")
-			plot(go.Figure(data = [trace0, trace1, trace2, trace3, trace4], layout = layout), filename = "houses/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = True, auto_open = True)
+			plot(go.Figure(data = [trace0, trace1, trace2, trace3, trace4], layout = layout), filename = "nöjdhetsindex/sammanställning_nojdhet_kommun_" + regionCodeValues[codeIndex] + ".html", include_plotlyjs = includePlotlyInHtml, auto_open = auto_open)
 		except ValueError as err:
 			print(colored("Sammanställning nojdhet kommun 2", "red"), " No data for region: ", regionCodeValues[regionCodes.index(err.args[1])], " code: ", err.args[1])
 if __name__ == "__main__":
-	# gh.createDirectories(["houses"])
+	gh.createDirectories(["aldersfördelning_bostadsbestånd", "fritidshus", "nyproduktion", "rivning_byggnader", "försäljning", "hyresnivåer_i_hyresbestånd", "nöjdhetsindex", "arbetsmarknad_hek"])
 
-	# maxIndex = len(regionCodes) - 1
-	# startIndex = 0
-	# endIndex = maxIndex
-	# cmd = input("Include plotlyjs(Y or N, default: N)?: ")
-	# if cmd == 'Y':
-	# 	setPlotlyInclusion(True)
+	maxIndex = len(regionCodes) - 1
+	startIndex = 0
+	endIndex = maxIndex
+	cmd = input("Include plotlyjs(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setPlotlyInclusion(True)
 
-	# cmd = input("Open each file after creation(Y or N, default: N)?: ")
-	# if cmd == 'Y':
-	# 	setAutoOpen(True)
+	cmd = input("Open each file after creation(Y or N, default: N)?: ")
+	if cmd == 'Y':
+		setAutoOpen(True)
 
-	# index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
-	# index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
+	index1 = input("Select start index for regions(default is 0, 0 <= index < " + str(maxIndex) + "): ")
+	index2 = input("Select end index for regions(default is " + str(maxIndex) + ", 0 < index <= " + str(maxIndex) + "): ")
 	
-	# if index1:
-	# 	startIndex = int(index1)
+	if index1:
+		startIndex = int(index1)
 
-	# if index2:
-	# 	endIndex = int(index2)
+	if index2:
+		endIndex = int(index2)
 
-	# if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
-	# 	print("Wrong indexes")
-	# 	exit()
+	if startIndex < 0 or startIndex >= maxIndex or endIndex <= 0 or endIndex > maxIndex:
+		print("Wrong indexes")
+		exit()
 	
 	startIndex = regionCodes.index("0885")
 	endIndex = startIndex + 1
@@ -334,15 +334,16 @@ if __name__ == "__main__":
 	# 4. Antal fritidshus mot År
 	# 5. Antal fritidshus, Antal lagenheter och Antal Bostandshus
 	# 6. Antal påbörjade lägenheter
-	# 7. Antal rivna lägenheter i flerbostadshus per År
-	# 8. Genomsnittlig hyra per kvm i omradet, 95% konfidens
-	# 9. Antal affärer per är
-	# 10. Medelpris
-	# 11. Köpeskillingskoefficient (prix/taxvärde)
-	# 12. Antal i arbetsmarknadsåtgärder
-	# 13. Arbetsmarknadsdata, detaljerad
-	# 14. Sammanställning nojdhet kommun
-	# 15. Sammanställning nojdhet kommun 2
+	# 7. Antal färdigställda lägenheter
+	# 8. Antal rivna lägenheter i flerbostadshus per År
+	# 9. Genomsnittlig hyra per kvm i omradet, 95% konfidens
+	# 10. Antal affärer per är
+	# 11. Medelpris
+	# 12. Köpeskillingskoefficient (prix/taxvärde)
+	# 13. Antal i arbetsmarknadsåtgärder
+	# 14. Arbetsmarknadsdata, detaljerad
+	# 15. Sammanställning nojdhet kommun
+	# 16. Sammanställning nojdhet kommun 2
 	# """
 
 	# print(initial_text)
@@ -361,26 +362,44 @@ if __name__ == "__main__":
 	# 		plotTable2Graph2(startIndex, endIndex)
 	# 	elif cmd == '6':
 	# 		plotSoldHousesTable3Graph1(startIndex, endIndex)
-	# 	elif cmd == '7':
-	# 		plotDemolitionGraph(startIndex, endIndex)
+	#	elif cmd == '7':
+	#		plotNewlyBuildApparmentsProjection(startIndex, endIndex)
 	# 	elif cmd == '8':
+	# 		plotDemolitionGraph(startIndex, endIndex)
+	# 	elif cmd == '9':
 	# 		plotAverageRentGraph(startIndex, endIndex)
-	#	elif cmd == '9':
-	#		plotSoldHousesByRegionGraph(startIndex, endIndex)
 	#	elif cmd == '10':
+	#		plotSoldHousesByRegionGraph(startIndex, endIndex)
+	#	elif cmd == '11':
 	#		plotBaseTaxationGraph(startIndex, endIndex)
-	# 	elif cmd == '11':
+	# 	elif cmd == '12':
 	# 		plotPriceCoeficientGraph(startIndex, endIndex)
-	#	 elif cmd == '12':
+	#	 elif cmd == '13':
 	#	 	plotSharesInLabourMarket(startIndex, endIndex)
-	#	elif cmd == '13':
-	#		plotLabourMarketData(startIndex, endIndex)
 	#	elif cmd == '14':
+	#		plotLabourMarketData(startIndex, endIndex)
+	#	elif cmd == '15':
 	#		plotAverageRatingInfluenceData(startIndex, endIndex)
-	#	 elif cmd == '15':
+	#	 elif cmd == '16':
 	#		plotCitizenSurveyData(startIndex, endIndex)
 	# 	elif cmd == 'q':
 	# 		break
 	# 	else:
-	# 		print("Invalid command.")	
+	# 		print("Invalid command.")
+
+	plotBarHousesData(startIndex, endIndex)
+	plotLineHosesData(startIndex, endIndex)
+	plotPieChartHousesData(startIndex, endIndex)
+	plotHolidayHosesPerYear(startIndex, endIndex)
+	plotTable2Graph2(startIndex, endIndex)
+	plotSoldHousesTable3Graph1(startIndex, endIndex)
 	plotNewlyBuildApparmentsProjection(startIndex, endIndex)
+	plotDemolitionGraph(startIndex, endIndex)
+	plotAverageRentGraph(startIndex, endIndex)
+	plotSoldHousesByRegionGraph(startIndex, endIndex)
+	plotBaseTaxationGraph(startIndex, endIndex)
+	plotPriceCoeficientGraph(startIndex, endIndex)
+	plotSharesInLabourMarket(startIndex, endIndex)
+	plotLabourMarketData(startIndex, endIndex)
+	plotAverageRatingInfluenceData(startIndex, endIndex)
+	plotCitizenSurveyData(startIndex, endIndex)
